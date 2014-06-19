@@ -198,10 +198,15 @@ MACRO(MYSQL_ADD_PLUGIN)
       # cpack_rpm.cmake and cpack_deb.cmake). The following lines would
       # append the current component to this list if it is already not present.
       # We should avoid this for wsrep builds (WITH_WSREP) as with wsrep build
+      #
+      # Was 10.0:
+      # We should avoid this for wsrep builds (WITH_WSREP) as with wsrep build
       # only server package is required to be generated.
-      IF(CPACK_COMPONENTS_ALL AND
-         NOT CPACK_COMPONENTS_ALL MATCHES ${ARG_COMPONENT} AND
-         NOT WITH_WSREP)
+      #      IF(CPACK_COMPONENTS_ALL AND
+      #         NOT CPACK_COMPONENTS_ALL MATCHES ${ARG_COMPONENT} AND
+      #         NOT WITH_WSREP)
+      # In 10.1 we should build all packages 
+      #
         SET(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} ${ARG_COMPONENT} PARENT_SCOPE)
         SET(CPACK_RPM_${ARG_COMPONENT}_PACKAGE_REQUIRES "MariaDB-server" PARENT_SCOPE)
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2011, Codership Oy <info@codership.com>.
-# Copyright (c) 2013, Monty Program Ab.
+# Copyright (c) 2011, 2014, Codership Oy <info@codership.com>.
+# Copyright (c) 2013, 2014, Monty Program Ab.
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,15 @@ ELSE()
   )
 ENDIF()
 
+#
+# Galera library does not compile with windows and solaris
+#
+IF(UNIX)
 OPTION(WITH_WSREP "WSREP replication API (to use, e.g. Galera Replication library)" ON)
+ELSE()
+OPTION(WITH_WSREP "WSREP replication API (to use, e.g. Galera Replication library)" OFF)
+ENDIF()
+
 IF (WITH_WSREP)
   SET(WSREP_C_FLAGS   "-DWITH_WSREP -DWSREP_PROC_INFO -DMYSQL_MAX_VARIABLE_VALUE_LEN=2048")
   SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${WSREP_C_FLAGS}")

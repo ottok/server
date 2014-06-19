@@ -23,7 +23,7 @@ a	b
 DROP PROCEDURE test_p1;
 SET @save_autocommit= @@autocommit;
 SET @@autocommit= OFF;
-SHOW VARIABLES LIKE '%autocommit%';
+SHOW VARIABLES LIKE 'autocommit%';
 Variable_name	Value
 autocommit	OFF
 wsrep_retry_autocommit	1

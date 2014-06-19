@@ -197,7 +197,7 @@ c1	c2
 5	9
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=100, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	100
 auto_increment_offset	10
@@ -231,7 +231,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -271,7 +271,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -285,7 +285,7 @@ SELECT * FROM t1;
 c1
 -1
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=100, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	100
 auto_increment_offset	10
@@ -319,7 +319,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -335,7 +335,7 @@ SELECT * FROM t1;
 c1
 1
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=100, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	100
 auto_increment_offset	10
@@ -376,7 +376,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -392,7 +392,7 @@ SELECT * FROM t1;
 c1
 1
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=100, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	100
 auto_increment_offset	10
@@ -427,7 +427,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -443,7 +443,7 @@ c1
 1
 9223372036854775794
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=2, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	2
 auto_increment_offset	10
@@ -462,7 +462,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -478,7 +478,7 @@ c1
 1
 18446744073709551603
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=2, @@SESSION.AUTO_INCREMENT_OFFSET=10;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	2
 auto_increment_offset	10
@@ -492,7 +492,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -508,7 +508,7 @@ c1
 1
 18446744073709551603
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=5, @@SESSION.AUTO_INCREMENT_OFFSET=7;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	5
 auto_increment_offset	7
@@ -522,7 +522,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -542,7 +542,7 @@ c1
 -9223372036854775806
 1
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=3, @@SESSION.AUTO_INCREMENT_OFFSET=3;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	3
 auto_increment_offset	3
@@ -560,7 +560,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -579,7 +579,7 @@ SET @@SESSION.AUTO_INCREMENT_INCREMENT=1152921504606846976, @@SESSION.AUTO_INCRE
 Warnings:
 Warning	1292	Truncated incorrect auto_increment_increment value: '1152921504606846976'
 Warning	1292	Truncated incorrect auto_increment_offset value: '1152921504606846976'
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	65535
 auto_increment_offset	65535
@@ -593,7 +593,7 @@ c1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
 SET @@INSERT_ID=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -881,7 +881,7 @@ ERROR 22003: Out of range value for column 'c1' at row 1
 DROP TABLE t1;
 DROP TABLE t2;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
@@ -1272,7 +1272,7 @@ t1	CREATE TABLE `t1` (
 ) ENGINE=InnoDB AUTO_INCREMENT=18446744073709551615 DEFAULT CHARSET=latin1
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=256;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	256
@@ -1291,7 +1291,7 @@ c1	c2
 1	NULL
 DROP TABLE t1;
 SET @@SESSION.AUTO_INCREMENT_INCREMENT=1, @@SESSION.AUTO_INCREMENT_OFFSET=1;
-SHOW VARIABLES LIKE "%auto_inc%";
+SHOW VARIABLES LIKE "auto_inc%";
 Variable_name	Value
 auto_increment_increment	1
 auto_increment_offset	1
