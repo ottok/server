@@ -84,6 +84,14 @@ ulong		innobase_thd_get_thread_id(const void* thd);
 /* prototypes for new functions added to ha_innodb.cc */
 ibool	innobase_get_slow_log();
 
+#ifdef WITH_WSREP
+extern int wsrep_debug;
+extern int wsrep_trx_is_aborting(void *thd_ptr);
+#endif
+/* The following counter is incremented whenever there is some user activity
+in the server */
+UNIV_INTERN ulint	srv_activity_count	= 0;
+
 /* The following is the maximum allowed duration of a lock wait. */
 UNIV_INTERN ulint	srv_fatal_semaphore_wait_threshold = 600;
 
