@@ -2355,10 +2355,11 @@ static int binlog_savepoint_rollback(handlerton *hton, THD *thd, void *sv)
 #ifdef WITH_WSREP
   if (!wsrep_emulate_bin_log &&
       unlikely(trans_has_updated_non_trans_table(thd) ||
+               (thd->variables.option_bits & OPTION_KEEP_LOG)))
 #else
   if (unlikely(trans_has_updated_non_trans_table(thd) ||
-#endif
                (thd->variables.option_bits & OPTION_KEEP_LOG)))
+#endif
   {
     char buf[1024];
     String log_query(buf, sizeof(buf), &my_charset_bin);
@@ -2371,10 +2372,12 @@ static int binlog_savepoint_rollback(handlerton *hton, THD *thd, void *sv)
                           TRUE, FALSE, TRUE, errcode);
     DBUG_RETURN(mysql_bin_log.write(&qinfo));
   }
+
 #ifdef WITH_WSREP
   if (!wsrep_emulate_bin_log)
 #endif
       binlog_trans_log_truncate(thd, *(my_off_t*)sv);
+
   DBUG_RETURN(0);
 }
 
