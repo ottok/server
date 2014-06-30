@@ -723,12 +723,12 @@ drop table t1;
 # Enum merging test
 #
 CREATE TABLE t1 (
-  a ENUM('ï¿½','ï¿½','ï¿½') character set utf8 not null default 'ï¿½',
+  a ENUM('ä','ö','ü') character set utf8 not null default 'ü',
   b ENUM("one", "two") character set utf8,
   c ENUM("one", "two")
 );
 show create table t1;
-insert into t1 values ('ï¿½', 'one', 'one'), ('ï¿½', 'two', 'one'), ('ï¿½', NULL, NULL);
+insert into t1 values ('ä', 'one', 'one'), ('ö', 'two', 'one'), ('ü', NULL, NULL);
 create table t2 select NULL union select a from t1;
 show columns from t2;
 drop table t2;
