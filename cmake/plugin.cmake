@@ -136,6 +136,13 @@ MACRO(MYSQL_ADD_PLUGIN)
         ADD_DEPENDENCIES(${target}_embedded GenError)
       ENDIF()
     ENDIF()
+
+    IF (WITH_WSREP)
+      # Set compile definitions for non-embedded plugins
+      SET_TARGET_PROPERTIES(${target} PROPERTIES
+        COMPILE_DEFINITIONS "WITH_WSREP"
+        COMPILE_DEFINITIONS "WSREP_PROC_INFO")
+    ENDIF()
     
     IF(ARG_STATIC_OUTPUT_NAME)
       SET_TARGET_PROPERTIES(${target} PROPERTIES 

@@ -990,13 +990,16 @@ bool wsrep_trans_cache_is_empty(THD *thd);
 void thd_binlog_flush_pending_rows_event(THD *thd, bool stmt_end);
 void thd_binlog_trx_reset(THD * thd);
 void thd_binlog_rollback_stmt(THD * thd);
+#endif /* WITH_WSREP */
 
+#if defined(WITH_WSREP) && !defined(EMBEDDED_LIBRARY)
 #define WSREP_FORMAT(my_format)                           \
-  ((wsrep_forced_binlog_format != BINLOG_FORMAT_UNSPEC) ?	\
+  ((wsrep_forced_binlog_format != BINLOG_FORMAT_UNSPEC) ? \
    wsrep_forced_binlog_format : my_format)
 #else
 #define WSREP_FORMAT(my_format) my_format
-#endif
+#endif /* WITH_WSREP && !EMBEDDED_LIBRARY */
+
 int query_error_code(THD *thd, bool not_killed);
 uint purge_log_get_error_code(int res);
 

@@ -13,8 +13,23 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-IF(WITH_WSREP)
- SET(WSREP_INCLUDES ${CMAKE_SOURCE_DIR}/wsrep)
+ 
+IF(WITH_WSREP AND NOT EMBEDDED_LIBRARY)
+  BUILD_WITH_WSREP()
+  SET(WSREP_INCLUDES ${CMAKE_SOURCE_DIR}/wsrep)
+  SET(WSREP_SOURCES
+    wsrep_check_opts.cc
+    wsrep_hton.cc
+    wsrep_mysqld.cc 
+    wsrep_notify.cc
+    wsrep_sst.cc
+    wsrep_utils.cc
+    wsrep_var.cc
+    wsrep_binlog.cc
+    wsrep_applier.cc
+    wsrep_thd.cc
+  )
+  SET(WSREP_LIB wsrep)
 ENDIF()
 
 INCLUDE_DIRECTORIES(
@@ -38,22 +53,6 @@ SET_SOURCE_FILES_PROPERTIES(${GEN_SOURCES} PROPERTIES GENERATED 1)
 ADD_DEFINITIONS(-DMYSQL_SERVER -DHAVE_EVENT_SCHEDULER -DHAVE_POOL_OF_THREADS) 
 IF(SSL_DEFINES)
  ADD_DEFINITIONS(${SSL_DEFINES})
-ENDIF()
-
-IF(WITH_WSREP)
- SET(WSREP_SOURCES
-   wsrep_check_opts.cc
-   wsrep_hton.cc
-   wsrep_mysqld.cc 
-   wsrep_notify.cc
-   wsrep_sst.cc
-   wsrep_utils.cc
-   wsrep_var.cc
-   wsrep_binlog.cc
-   wsrep_applier.cc
-   wsrep_thd.cc
- )
- SET(WSREP_LIB wsrep)
 ENDIF()
 
 SET (SQL_SOURCE
