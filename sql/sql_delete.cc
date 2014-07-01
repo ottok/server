@@ -223,6 +223,7 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
   killed_state killed_status= NOT_KILLED;
   THD::enum_binlog_query_type query_type= THD::ROW_QUERY_TYPE;
   bool with_select= !select_lex->item_list.is_empty();
+  Explain_delete *explain;
   Delete_plan query_plan(thd->mem_root);
   query_plan.index= MAX_KEY;
   query_plan.using_filesort= FALSE;
@@ -257,8 +258,9 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
   if (mysql_prepare_delete(thd, table_list, select_lex->with_wild,
                                             select_lex->item_list, &conds))
     DBUG_RETURN(TRUE);
-
-  (void) result->prepare(select_lex->item_list, NULL);
+  
+  if (with_select)
+    (void) result->prepare(select_lex->item_list, NULL);
 
   if (thd->lex->current_select->first_cond_optimization)
   {
@@ -280,7 +282,6 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
 	  setup_order(thd, select_lex->ref_pointer_array, &tables,
                     fields, all_fields, order))
     {
-      delete select;
       free_underlaid_joins(thd, &thd->lex->select_lex);
       DBUG_RETURN(TRUE);
     }
@@ -331,8 +332,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
     DBUG_PRINT("debug", ("Trying to use delete_all_rows()"));
 
     query_plan.set_delete_all_rows(maybe_deleted);
-    if (thd->lex->describe)
-      goto exit_without_my_ok;
+    if (thd->lex->describe || thd->lex->analyze_stmt)
+      goto produce_explain_and_leave;
 
     if (!(error=table->file->ha_delete_all_rows()))
     {
@@ -361,8 +362,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
     {
       limit= 0;
       query_plan.set_impossible_where();
-      if (thd->lex->describe)
-        goto exit_without_my_ok;
+      if (thd->lex->describe || thd->lex->analyze_stmt)
+        goto produce_explain_and_leave;
     }
   }
 
@@ -372,8 +373,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
     free_underlaid_joins(thd, select_lex);
 
     query_plan.set_no_partitions();
-    if (thd->lex->describe)
-      goto exit_without_my_ok;
+    if (thd->lex->describe || thd->lex->analyze_stmt)
+      goto produce_explain_and_leave;
 
     my_ok(thd, 0);
     DBUG_RETURN(0);
@@ -392,8 +393,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
   if ((select && select->check_quick(thd, safe_update, limit)) || !limit)
   {
     query_plan.set_impossible_where();
-    if (thd->lex->describe)
-      goto exit_without_my_ok;
+    if (thd->lex->describe || thd->lex->analyze_stmt)
+      goto produce_explain_and_leave;
 
     delete select;
     free_underlaid_joins(thd, select_lex);
@@ -457,7 +458,7 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
      - otherwise, execute the query plan
   */
   if (thd->lex->describe)
-    goto exit_without_my_ok;
+    goto produce_explain_and_leave;
   
   query_plan.save_explain_data(thd->lex->explain);
 
@@ -538,9 +539,13 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
       goto cleanup;
   }
 
+  explain= (Explain_delete*)thd->lex->explain->get_upd_del_plan();
+  explain->tracker.on_scan_init();
+
   while (!(error=info.read_record(&info)) && !thd->killed &&
 	 ! thd->is_error())
   {
+    explain->tracker.on_record_read();
     if (table->vfield)
       update_virtual_fields(thd, table,
                             table->triggers ? VCOL_UPDATE_ALL :
@@ -549,6 +554,7 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds,
     // thd->is_error() is tested to disallow delete row on error
     if (!select || select->skip_record(thd) > 0)
     {
+      explain->tracker.on_record_after_where();
       if (table->triggers &&
           table->triggers->process_triggers(thd, TRG_EVENT_DELETE,
                                             TRG_ACTION_BEFORE, FALSE))
@@ -630,6 +636,7 @@ cleanup:
   }
 
   delete select;
+  select= NULL;
   transactional_table= table->file->has_transactions();
 
   if (!transactional_table && deleted > 0)
@@ -669,27 +676,45 @@ cleanup:
     }
   }
   DBUG_ASSERT(transactional_table || !deleted || thd->transaction.stmt.modified_non_trans_table);
+  
+
   free_underlaid_joins(thd, select_lex);
   if (error < 0 || 
       (thd->lex->ignore && !thd->is_error() && !thd->is_fatal_error))
   {
-    if (!with_select)
-      my_ok(thd, deleted);
-    else
+    if (thd->lex->analyze_stmt)
+    {
+      error= 0;
+      goto send_nothing_and_leave;
+    }
+
+    if (with_select)
       result->send_eof();
+    else
+      my_ok(thd, deleted);
     DBUG_PRINT("info",("%ld records deleted",(long) deleted));
   }
   DBUG_RETURN(error >= 0 || thd->is_error());
   
   /* Special exits */
-exit_without_my_ok:
+produce_explain_and_leave:
+  /* 
+    We come here for various "degenerate" query plans: impossible WHERE,
+    no-partitions-used, impossible-range, etc.
+  */
   query_plan.save_explain_data(thd->lex->explain);
-  int err2= thd->lex->explain->send_explain(thd);
+
+send_nothing_and_leave:
+  /* 
+    ANALYZE DELETE jumps here. We can't send explain right here, because
+    we might be using ANALYZE DELETE ...RETURNING, in which case we have 
+    Protocol_discard active.
+  */
 
   delete select;
   free_underlaid_joins(thd, select_lex);
   //table->set_keyread(false);
-  DBUG_RETURN((err2 || thd->is_error() || thd->killed) ? 1 : 0);
+  DBUG_RETURN((thd->is_error() || thd->killed) ? 1 : 0);
 }
 
 
@@ -1295,7 +1320,7 @@ bool multi_delete::send_eof()
   if (local_error != 0)
     error_handled= TRUE; // to force early leave from ::abort_result_set()
 
-  if (!local_error)
+  if (!local_error && !thd->lex->analyze_stmt)
   {
     ::my_ok(thd, deleted);
   }

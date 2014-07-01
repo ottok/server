@@ -622,6 +622,7 @@ typedef struct system_variables
   my_bool query_cache_strip_comments;
 
   plugin_ref table_plugin;
+  plugin_ref tmp_table_plugin;
 
   /* Only charset part of these variables is sensible */
   CHARSET_INFO  *character_set_filesystem;
@@ -4020,6 +4021,20 @@ public:
   virtual bool check_simple_select() const { return FALSE; }
   void abort_result_set();
   virtual void cleanup();
+};
+
+
+/*
+  We need this class, because select_send::send_eof() will call ::my_eof.
+
+  See also class Protocol_discard.
+*/
+
+class select_send_analyze : public select_send
+{
+  bool send_result_set_metadata(List<Item> &list, uint flags) { return 0; }
+  bool send_eof() { return 0; }
+  void abort_result_set() {}
 };
 
 

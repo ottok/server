@@ -3129,7 +3129,7 @@ case SQLCOM_PREPARE:
       rather than at parse-time.
     */
     if (!(create_info.used_fields & HA_CREATE_USED_ENGINE))
-      create_info.db_type= ha_default_handlerton(thd);
+      create_info.use_default_db_type(thd);
     /*
       If we are using SET CHARSET without DEFAULT, add an implicit
       DEFAULT to not confuse old users. (This may change).
@@ -3894,12 +3894,47 @@ end_with_restore_list:
     unit->set_limit(select_lex);
 
     MYSQL_DELETE_START(thd->query());
-    if (!(sel_result= lex->result) && !(sel_result= new select_send()))
-      return 1;                       
+    Protocol *save_protocol;
+    bool replaced_protocol= false;
+
+    if (!select_lex->item_list.is_empty())
+    {
+      /* This is DELETE ... RETURNING.  It will return output to the client */
+      if (thd->lex->analyze_stmt)
+      {
+        /* 
+          Actually, it is ANALYZE .. DELETE .. RETURNING. We need to produce
+          output and then discard it.
+        */
+        sel_result= new select_send_analyze();
+        replaced_protocol= true;
+        save_protocol= thd->protocol;
+        thd->protocol= new Protocol_discard(thd);
+      }
+      else
+      {
+        if (!(sel_result= lex->result) && !(sel_result= new select_send()))
+          return 1;
+      }
+    }
+
     res = mysql_delete(thd, all_tables, 
                        select_lex->where, &select_lex->order_list,
                        unit->select_limit_cnt, select_lex->options,
                        sel_result);
+
+    if (replaced_protocol)
+    {
+      delete thd->protocol;
+      thd->protocol= save_protocol;
+    }
+
+    if (thd->lex->analyze_stmt || thd->lex->describe)
+    {
+      if (!res)
+        res= thd->lex->explain->send_explain(thd);
+    }
+
     delete sel_result;
     MYSQL_DELETE_DONE(res, (ulong) thd->get_row_count_func());
     break;
@@ -3908,7 +3943,6 @@ end_with_restore_list:
   {
     DBUG_ASSERT(first_table == all_tables && first_table != 0);
     TABLE_LIST *aux_tables= thd->lex->auxiliary_table_list.first;
-    bool explain= MY_TEST(lex->describe);
     multi_delete *result;
 
     if ((res= multi_delete_precheck(thd, all_tables)))
@@ -3954,7 +3988,7 @@ end_with_restore_list:
           result->abort_result_set(); /* for both DELETE and EXPLAIN DELETE */
         else
         {
-          if (explain)
+          if (lex->describe || lex->analyze_stmt)
             res= thd->lex->explain->send_explain(thd);
         }
         delete result;
@@ -5664,7 +5698,7 @@ static bool execute_sqlcom_select(THD *thd, TABLE_LIST *all_tables)
         This will call optimize() for all parts of query. The query plan is
         printed out below.
       */
-      res= mysql_explain_union(thd, &thd->lex->unit, result);
+      res= mysql_explain_union(thd, &lex->unit, result);
       
       /* Print EXPLAIN only if we don't have an error */
       if (!res)
@@ -5674,7 +5708,7 @@ static bool execute_sqlcom_select(THD *thd, TABLE_LIST *all_tables)
           top-level LIMIT
         */        
         result->reset_offset_limit(); 
-        thd->lex->explain->print_explain(result, thd->lex->describe);
+        lex->explain->print_explain(result, lex->describe, lex->analyze_stmt);
         if (lex->describe & DESCRIBE_EXTENDED)
         {
           char buff[1024];
@@ -5684,7 +5718,7 @@ static bool execute_sqlcom_select(THD *thd, TABLE_LIST *all_tables)
             The warnings system requires input in utf8, @see
             mysqld_show_warnings().
           */
-          thd->lex->unit.print(&str, QT_TO_SYSTEM_CHARSET);
+          lex->unit.print(&str, QT_TO_SYSTEM_CHARSET);
           push_warning(thd, Sql_condition::WARN_LEVEL_NOTE,
                        ER_YES, str.c_ptr_safe());
         }
@@ -5698,12 +5732,30 @@ static bool execute_sqlcom_select(THD *thd, TABLE_LIST *all_tables)
     }
     else
     {
-      if (!result && !(result= new select_send()))
-        return 1;                               /* purecov: inspected */
+      Protocol *save_protocol;
+      if (lex->analyze_stmt)
+      {
+        result= new select_send_analyze();
+        save_protocol= thd->protocol;
+        thd->protocol= new Protocol_discard(thd);
+      }
+      else
+      {
+        if (!result && !(result= new select_send()))
+          return 1;                               /* purecov: inspected */
+      }
       query_cache_store_query(thd, all_tables);
       res= handle_select(thd, lex, result, 0);
       if (result != lex->result)
         delete result;
+
+      if (lex->analyze_stmt)
+      {
+        delete thd->protocol;
+        thd->protocol= save_protocol;
+        if (!res)
+          res= thd->lex->explain->send_explain(thd);
+      }
     }
   }
   /* Count number of empty select queries */
