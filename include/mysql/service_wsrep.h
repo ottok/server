@@ -75,7 +75,7 @@ extern struct wsrep_service_st {
   my_bool                     (*wsrep_aborting_thd_contains_func)(THD *thd);
   void                        (*wsrep_aborting_thd_enqueue_func)(THD *thd);
   bool                        (*wsrep_consistency_check_func)(THD *thd);
-  int                         (*wsrep_is_wsrep_xid_func)(const struct xid_t *xid);
+  int                         (*wsrep_is_wsrep_xid_func)(const void* xid_ptr);
   void                        (*wsrep_lock_rollback_func)();
   int                         (*wsrep_on_func)(MYSQL_THD);
   void                        (*wsrep_post_commit_func)(THD* thd, bool all);
@@ -168,7 +168,7 @@ enum wsrep_conflict_state wsrep_thd_get_conflict_state(MYSQL_THD thd);
 enum wsrep_exec_mode wsrep_thd_exec_mode(THD *thd);
 enum wsrep_query_state wsrep_thd_query_state(THD *thd);
 enum wsrep_trx_status wsrep_run_wsrep_commit(THD *thd, bool all);
-int wsrep_is_wsrep_xid(const struct xid_t* xid);
+int wsrep_is_wsrep_xid(const void* xid_ptr);
 int wsrep_on(MYSQL_THD thd);
 int wsrep_thd_retry_counter(THD *thd);
 int wsrep_trx_is_aborting(MYSQL_THD thd);

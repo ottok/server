@@ -661,6 +661,7 @@ typedef struct system_variables
   my_bool wsrep_dirty_reads;
   uint wsrep_sync_wait;
   ulong wsrep_retry_autocommit;
+  ulong wsrep_OSU_method;
   double long_query_time_double, max_statement_time_double;
 
   my_bool pseudo_slave_mode;

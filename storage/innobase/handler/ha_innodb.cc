@@ -6801,6 +6801,10 @@ wsrep_store_key_val_for_row(
 	DBUG_RETURN((uint)(buff - buff_start));
 }
 #endif /* WITH_WSREP */
+
+/*******************************************************************//**
+Stores a key value for a row to a buffer.
+@return	key value length as stored in buff */
 UNIV_INTERN
 uint
 ha_innobase::store_key_val_for_row(
@@ -7749,15 +7753,19 @@ no_commit:
 			;
 		} else if (src_table == prebuilt->table) {
 #ifdef WITH_WSREP
-			if (wsrep_on(user_thd)) {
+			if (wsrep_on(user_thd) && wsrep_load_data_splitting &&
+			    sql_command == SQLCOM_LOAD                      &&
+			    !thd_test_options(
+					      user_thd, OPTION_NOT_AUTOCOMMIT | OPTION_BEGIN))
+			{
 				switch (wsrep_run_wsrep_commit(user_thd, 1))
 				{
 				case WSREP_TRX_OK:
-					break;
+				  break;
 				case WSREP_TRX_SIZE_EXCEEDED:
 				case WSREP_TRX_CERT_FAIL:
 				case WSREP_TRX_ERROR:
-					DBUG_RETURN(1);
+				  DBUG_RETURN(1);
 				}
 
 				if (binlog_hton->commit(binlog_hton, user_thd, 1))
@@ -7776,15 +7784,19 @@ no_commit:
 			prebuilt->sql_stat_start = TRUE;
 		} else {
 #ifdef WITH_WSREP
-			if (wsrep_on(user_thd)) {
+			if (wsrep_on(user_thd) && wsrep_load_data_splitting &&
+			    sql_command == SQLCOM_LOAD                      &&
+			    !thd_test_options(
+					      user_thd, OPTION_NOT_AUTOCOMMIT | OPTION_BEGIN))
+			{
 				switch (wsrep_run_wsrep_commit(user_thd, 1))
 				{
 				case WSREP_TRX_OK:
-					break;
+				  break;
 				case WSREP_TRX_SIZE_EXCEEDED:
 				case WSREP_TRX_CERT_FAIL:
 				case WSREP_TRX_ERROR:
-					DBUG_RETURN(1);
+				  DBUG_RETURN(1);
 				}
 
 				if (binlog_hton->commit(binlog_hton, user_thd, 1))
@@ -17937,7 +17949,7 @@ wsrep_innobase_kill_one_trx(void * const bf_thd_ptr,
 	WSREP_LOG_CONFLICT(bf_thd, thd, TRUE);
 
 	WSREP_DEBUG("BF kill (%lu, seqno: %lld), victim: (%lu) trx: %lu",
- 		    signal, (long long)bf_seqno,
+		    signal, (long long)bf_seqno,
 		    thd_get_thread_id(thd),
 		    victim_trx->id);
 
@@ -18133,7 +18145,7 @@ wsrep_abort_transaction(handlerton* hton, THD *bf_thd, THD *victim_thd,
 		wsrep_thd_LOCK(victim_thd);
 		wsrep_thd_set_conflict_state(victim_thd, MUST_ABORT);
 		wsrep_thd_UNLOCK(victim_thd);
-		wsrep_thd_awake(victim_thd, signal); 
+		wsrep_thd_awake(victim_thd, signal);
 	}
 	DBUG_RETURN(-1);
 }

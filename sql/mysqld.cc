@@ -5035,6 +5035,11 @@ static int init_server_components()
       {
         set_ports(); // this is also called in network_init() later but we need
                      // to know mysqld_port now - lp:1071882
+        /*
+          Plugin initialization (plugin_init()) hasn't happened yet, set
+          maria_hton to 0.
+        */
+        maria_hton= 0;
         wsrep_init_startup(true);
       }
     }

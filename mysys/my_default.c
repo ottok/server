@@ -431,6 +431,7 @@ int get_defaults_options(int argc, char **argv,
     if (!*group_suffix && is_prefix(*argv, "--defaults-group-suffix="))
     {
       *group_suffix= *argv + sizeof("--defaults-group-suffix=")-1;
+
       argc--;
       continue;
     }

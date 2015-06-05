@@ -916,7 +916,11 @@ bool do_command(THD *thd)
 {
   bool return_value;
   char *packet= 0;
+#ifdef WITH_WSREP
+  ulong packet_length= 0; // just to avoid (false positive) compiler warning
+#else
   ulong packet_length;
+#endif /* WITH_WSREP */
   NET *net= &thd->net;
   enum enum_server_command command;
   DBUG_ENTER("do_command");
@@ -3375,6 +3379,7 @@ mysql_execute_command(THD *thd)
         /*
           select_create is currently not re-execution friendly and
           needs to be created for every execution of a PS/SP.
+          Note: In wsrep-patch, CTAS is handled like a regular transaction.
         */
         if ((result= new (thd->mem_root) select_create(thd, create_table,
                                                        &create_info,
@@ -4738,6 +4743,21 @@ end_with_restore_list:
       my_ok(thd);
       break;
     }
+
+#ifdef WITH_WSREP
+    if (lex->type & (
+            REFRESH_GRANT            |
+            REFRESH_HOSTS            |
+            REFRESH_DES_KEY_FILE     |
+#ifdef HAVE_QUERY_CACHE
+            REFRESH_QUERY_CACHE_FREE |
+#endif /* HAVE_QUERY_CACHE */
+            REFRESH_STATUS           |
+            REFRESH_USER_RESOURCES))
+    {
+      WSREP_TO_ISOLATION_BEGIN(WSREP_MYSQL_DB, NULL, NULL)
+    }
+#endif /* WITH_WSREP*/
 
     /*
       reload_acl_and_cache() will tell us if we are allowed to write to the
