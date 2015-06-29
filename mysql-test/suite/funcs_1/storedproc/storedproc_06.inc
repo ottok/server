@@ -4,6 +4,9 @@
 # privileges.
 --source include/not_embedded.inc
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
+
 --source suite/funcs_1/storedproc/load_sp_tb.inc
 
 # ==============================================================================
@@ -451,6 +454,8 @@ DROP USER 'user_2'@'localhost';
 # USE the same .inc to cleanup before and after the test
 --source suite/funcs_1/storedproc/cleanup_sp_tb.inc
 
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;
 # ==============================================================================
 --echo
 --echo .                               +++ END OF SCRIPT +++

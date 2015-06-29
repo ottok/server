@@ -1,3 +1,4 @@
+SET SQL_MODE="";
 drop database if exists events_test;
 drop database if exists mysqltest_db1;
 drop database if exists mysqltest_db2;
@@ -812,3 +813,4 @@ USE test;
 DROP DATABASE events_test;
 SET GLOBAL event_scheduler= 'ON';
 SET @@global.concurrent_insert= @concurrent_insert;
+SET SQL_MODE=default;

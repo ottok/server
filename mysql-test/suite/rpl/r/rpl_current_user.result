@@ -1,3 +1,5 @@
+set local sql_mode="";
+set global sql_mode="";
 include/rpl_init.inc [topology=1->2->3]
 include/rpl_connect.inc [creating master]
 include/rpl_connect.inc [creating slave]
@@ -184,3 +186,5 @@ DROP PROCEDURE my_revoke;
 DROP FUNCTION my_user;
 DROP EVENT e1;
 include/rpl_end.inc
+set local sql_mode=default;
+set global sql_mode=default;

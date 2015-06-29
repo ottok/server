@@ -2,6 +2,7 @@ show grants;
 Grants for root@localhost
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION
 GRANT PROXY ON ''@'%' TO 'root'@'localhost' WITH GRANT OPTION
+set sql_mode="";
 grant ALL on *.* to 'pfs_user_1'@localhost with GRANT OPTION;
 grant ALL on performance_schema.* to 'pfs_user_2'@localhost
 with GRANT OPTION;
@@ -579,3 +580,4 @@ UPDATE performance_schema.setup_timers SET timer_name = 'MICROSECOND' where name
 UPDATE performance_schema.setup_timers SET timer_name = 'CYCLE'       where name="wait";
 UPDATE performance_schema.setup_timers SET timer_name = 'NANOSECOND'  where name="stage";
 UPDATE performance_schema.setup_timers SET timer_name = 'NANOSECOND'  where name="statement";
+set sql_mode=default;

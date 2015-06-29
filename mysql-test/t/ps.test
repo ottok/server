@@ -1,5 +1,8 @@
 -- source include/not_embedded.inc
 -- source include/have_log_bin.inc
+
+SET SQL_MODE="";
+
 call mtr.add_suppression('Unsafe statement written to the binary log using statement format since BINLOG_FORMAT = STATEMENT.'); 
 #
 # SQL Syntax for Prepared Statements test
@@ -3648,4 +3651,5 @@ SELECT 1 FROM t1 GROUP BY 0 OR 18446744073709551615+1;
 
 drop table t1;
 
+SET SQL_MODE=default;
 --echo # End of 5.3 tests

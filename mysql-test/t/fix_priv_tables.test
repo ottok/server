@@ -22,6 +22,8 @@ if (!$MYSQL_FIX_PRIVILEGE_TABLES)
 drop table if exists t1,t1aa,t2aa;
 --enable_warnings
 
+set sql_mode="";
+
 #
 # Bug #20589 Missing some table level privileges after upgrade
 #
@@ -76,4 +78,5 @@ DROP VIEW testdb.v1;
 DROP TABLE testdb.t1;
 DROP DATABASE testdb;
 
+set sql_mode=default;
 # End of 4.1 tests

@@ -1,5 +1,6 @@
 --source include/not_windows_embedded.inc
 --source include/have_example_plugin.inc
+set sql_mode="";
 
 CREATE TABLE t1(a int) ENGINE=EXAMPLE;
 DROP TABLE t1;
@@ -265,3 +266,5 @@ UNINSTALL PLUGIN example;
 --error ER_NO_SUCH_TABLE
 RENAME TABLE t1 TO t2;
 DROP TABLE t1;
+
+set sql_mode=default;

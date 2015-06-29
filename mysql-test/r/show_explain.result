@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 drop table if exists t0, t1, t2, t3, t4;
 drop view if exists v1;
 SET @old_debug= @@session.debug;
@@ -1185,3 +1187,5 @@ ERROR 70100: Query execution was interrupted
 drop table t0,t1,t2;
 # End
 set debug_sync='RESET';
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

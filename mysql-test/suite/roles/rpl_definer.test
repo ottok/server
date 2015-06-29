@@ -4,11 +4,13 @@
 
 --source include/master-slave.inc
 
+set sql_mode='';
 create role role1;
 create role role2;
 grant execute on test.* to role2;
 grant role2 to role1;
 set role role1;
+set sql_mode=default;
 --sorted_result
 show grants;
 

@@ -2,6 +2,7 @@ create database mysqltest1;
 use mysqltest1;
 create table t1 (a int, b int, c int);
 insert t1 values (1,10,100),(2,20,200);
+set sql_mode="";
 create role role1;
 grant select (a) on mysqltest1.t1 to role1;
 grant event,execute,trigger on mysqltest1.* to role1;
@@ -624,3 +625,4 @@ show grants for utest;
 Grants for utest
 GRANT SELECT ON *.* TO 'utest'
 drop role utest;
+set sql_mode=default;

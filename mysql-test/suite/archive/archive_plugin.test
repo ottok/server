@@ -2,6 +2,8 @@ if (!$HA_ARCHIVE_SO) {
   --skip Need archive plugin
 }
 
+set sql_mode="";
+
 CREATE TABLE t1(a int) ENGINE=ARCHIVE;
 DROP TABLE t1;
 --replace_regex /\.dll/.so/
@@ -30,4 +32,6 @@ UNINSTALL PLUGIN archive;
 
 --error ER_SP_DOES_NOT_EXIST 
 UNINSTALL PLUGIN archive;
+
+set sql_mode=default;
 

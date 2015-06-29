@@ -6,6 +6,7 @@
 # BUG#11733: COMMITs should not happen if read-only is set
 #
 
+set sql_mode="";
 --disable_warnings
 DROP TABLE IF EXISTS table_11733 ;
 --enable_warnings
@@ -251,3 +252,5 @@ connection default;
 SET GLOBAL READ_ONLY = OFF;
 DROP USER bug33669@localhost;
 DROP DATABASE db1;
+
+set sql_mode=default;

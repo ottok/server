@@ -1,6 +1,8 @@
 include/master-slave.inc
 [connection master]
+set sql_mode="";
 grant replication slave on *.* to replssl@localhost require ssl;
+set sql_mode=default;
 create table t1 (t int auto_increment, KEY(t));
 stop slave;
 change master to

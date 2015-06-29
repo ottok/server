@@ -12,7 +12,9 @@
 
 --source include/not_embedded.inc
 
+set sql_mode="";
 grant create user on *.* to foo@localhost;
+set sql_mode=default;
 --change_user foo
 
 --error ER_CANNOT_USER

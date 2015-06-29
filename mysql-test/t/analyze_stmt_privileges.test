@@ -11,7 +11,9 @@ use db;
 create table t1 (i int, c varchar(8));
 insert into t1 values (1,'foo'),(2,'bar'),(3,'baz'),(4,'qux');
 create view v1 as select * from t1 where i > 1;
+set sql_mode="";
 grant ALL on db.v1 to u1@localhost;
+set sql_mode=default;
 
 --connect (con1,localhost,u1,,)
 

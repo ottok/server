@@ -213,6 +213,7 @@ Y
 z
 Z
 DROP TABLE t1;
+set sql_mode="";
 CREATE TABLE t1 ENGINE=INNODB AS SELECT repeat('a', 5) AS s1 LIMIT 0;
 INSERT INTO t1 VALUES ('x'),('y'),('z'),('X'),('Y'),('Z');
 SELECT * FROM t1 GROUP BY s1;
@@ -326,6 +327,7 @@ z
 Z
 DROP TABLE t1;
 SET NAMES latin2;
+set sql_mode=default;
 CREATE TABLE t2(colours SET('red','blue','yellow'))CHARACTER SET latin2 COLLATE
 latin2_czech_cs;
 CREATE TABLE t1(continent ENUM('Asia', 'Europe','Africa','Antartica'))CHARACTER SET latin2

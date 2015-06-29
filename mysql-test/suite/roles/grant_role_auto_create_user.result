@@ -1,8 +1,10 @@
 create database db;
 create role auto_create;
+set sql_mode = '';
 grant all on db.* to auto_create;
 grant auto_create to foo@localhost;
 grant auto_create to bar@localhost identified by 'baz';
+set sql_mode = default;
 set role 'auto_create';
 use db;
 create table t1 (i int);

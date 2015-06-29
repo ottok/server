@@ -23,7 +23,9 @@ select `User`, `Host` from mysql.`user` where `user` like '2001:%';
 User	Host
 select `User`, `Host` from mysql.`user` where `user` like 'santa.claus.%';
 User	Host
+set sql_mode="";
 grant select on test.* to 'root'@'santa.claus.ipv6.example.com';
+set sql_mode=default;
 select "Con1 is alive";
 Con1 is alive
 Con1 is alive

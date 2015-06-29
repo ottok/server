@@ -1,6 +1,8 @@
 # Test grants for various objects (especially variables) related to
 # the binary log
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 source include/have_log_bin.inc;
 
 connection default;
@@ -73,3 +75,6 @@ SHOW BINARY LOGS;
 --disconnect rpl
 connection default;
 DROP USER 'mysqltest_1'@'localhost';
+
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

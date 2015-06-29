@@ -1,10 +1,12 @@
 create database mysqltest1;
 create database mysqltest2;
+set sql_mode='';
 create role r1, r2;
 grant all on mysqltest1.* to r1;
 grant all on mysqltest2.* to r2;
 grant r1 to r2;
 grant r2 to foo@localhost;
+set sql_mode=default;
 select current_user;
 current_user
 foo@localhost

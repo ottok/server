@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 drop tables if exists t1, t2;
 drop view if exists v1;
 delete from mysql.user where user like 'mysqltest\_%';
@@ -76,3 +78,5 @@ create view v1 as select a, convert_tz(b, 'UTC', 'Europe/Moscow') as lb from t1,
 ERROR 42000: ANY command denied to user 'mysqltest_1'@'localhost' for table 'time_zone'
 drop table t1;
 drop user mysqltest_1@localhost;
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

@@ -1064,7 +1064,8 @@ int fill_sysvars(THD *thd, TABLE_LIST *tables, COND *cond)
       { STRING_WITH_LEN("DOUBLE") },                 // GET_DOUBLE    14
       { STRING_WITH_LEN("FLAGSET") },                // GET_FLAGSET   15
     };
-    const LEX_CSTRING *type= types + (var->option.var_type & GET_TYPE_MASK);
+    const ulong vartype= (var->option.var_type & GET_TYPE_MASK);
+    const LEX_CSTRING *type= types + vartype;
     fields[6]->store(type->str, type->length, scs);
 
     // VARIABLE_COMMENT
@@ -1075,7 +1076,7 @@ int fill_sysvars(THD *thd, TABLE_LIST *tables, COND *cond)
     // NUMERIC_MAX_VALUE
     // NUMERIC_BLOCK_SIZE
     bool is_unsigned= true;
-    switch (var->option.var_type)
+    switch (vartype)
     {
     case GET_INT:
     case GET_LONG:
@@ -1157,7 +1158,7 @@ end:
   and update it directly.
 */
 
-void mark_sys_var_value_origin(void *ptr, enum sys_var::where here)
+void set_sys_var_value_origin(void *ptr, enum sys_var::where here)
 {
   bool found __attribute__((unused))= false;
   DBUG_ASSERT(!mysqld_server_started); // only to be used during startup
@@ -1174,5 +1175,22 @@ void mark_sys_var_value_origin(void *ptr, enum sys_var::where here)
   }
 
   DBUG_ASSERT(found); // variable must have been found
+}
+
+enum sys_var::where get_sys_var_value_origin(void *ptr)
+{
+  DBUG_ASSERT(!mysqld_server_started); // only to be used during startup
+
+  for (uint i= 0; i < system_variable_hash.records; i++)
+  {
+    sys_var *var= (sys_var*) my_hash_element(&system_variable_hash, i);
+    if (var->option.value == ptr)
+    {
+      return var->value_origin; //first match
+    }
+  }
+
+  DBUG_ASSERT(1); // variable must have been found
+  return sys_var::CONFIG;
 }
 

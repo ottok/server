@@ -20,10 +20,12 @@ select @@global.max_connect_errors into @saved_max_connect_errors;
 
 set global max_connect_errors = 3;
 
+set sql_mode="";
 grant select on test.* to 'root'@'santa.claus.ipv4.example.com';
 
 create user 'quota'@'santa.claus.ipv4.example.com';
 grant select on test.* to 'quota'@'santa.claus.ipv4.example.com';
+set sql_mode=default;
 
 connect (con1,"127.0.0.1",root,,test,$MASTER_MYPORT,);
 select "Con1 is alive";

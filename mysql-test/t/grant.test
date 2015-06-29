@@ -6,6 +6,8 @@
 # Save the initial number of concurrent sessions
 --source include/count_sessions.inc
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 SET @old_log_bin_trust_function_creators= @@global.log_bin_trust_function_creators;
 SET GLOBAL log_bin_trust_function_creators = 1;
 
@@ -2207,6 +2209,8 @@ disconnect con1;
 DROP USER untrusted@localhost;
 DROP DATABASE secret;
 
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;
 # Wait till we reached the initial number of concurrent sessions
 --source include/wait_until_count_sessions.inc
 

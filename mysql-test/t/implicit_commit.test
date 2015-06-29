@@ -2,6 +2,8 @@ source include/have_innodb.inc;
 source include/not_embedded.inc;
 source include/have_profiling.inc;
 
+SET SQL_MODE="";
+
 SET GLOBAL EVENT_SCHEDULER = OFF;
 SET BINLOG_FORMAT = STATEMENT;
 
@@ -1164,4 +1166,5 @@ DROP TABLE t3;
 eval USE $OLD_DB;
 DROP DATABASE db1;
 
+SET SQL_MODE=default;
 --echo End of tests

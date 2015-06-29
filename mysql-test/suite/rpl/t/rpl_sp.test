@@ -6,6 +6,7 @@
 source include/have_binlog_format_mixed.inc;
 source include/master-slave.inc;
 
+set sql_mode='';
 
 # we need a db != test, where we don't have automatic grants
 --disable_warnings
@@ -739,3 +740,4 @@ drop procedure p1;
 # Cleanup
 sync_slave_with_master;
 --source include/rpl_end.inc
+set sql_mode=default;

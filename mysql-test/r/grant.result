@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 SET @old_log_bin_trust_function_creators= @@global.log_bin_trust_function_creators;
 SET GLOBAL log_bin_trust_function_creators = 1;
 drop table if exists t1;
@@ -2557,3 +2559,5 @@ ERROR 42000: Access denied for user 'untrusted'@'localhost' to database 'secret'
 # Connection default
 DROP USER untrusted@localhost;
 DROP DATABASE secret;
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

@@ -12,6 +12,8 @@
 # Save the initial number of concurrent sessions
 --source include/count_sessions.inc
 
+SET global secure_auth=0;
+SET SQL_MODE="";
 
 --disable_warnings
 drop table if exists t1,t2;
@@ -452,3 +454,7 @@ delimiter ;|
 call p1(2);
 drop procedure p1;
 
+
+
+SET global secure_auth=default;
+SET SQL_MODE= default;

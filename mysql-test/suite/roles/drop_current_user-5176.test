@@ -3,7 +3,9 @@
 #
 --source include/not_embedded.inc
 
+set sql_mode='';
 grant create user on *.* to foo@localhost;
+set sql_mode=default;
 --connect (foo,localhost,foo,,)
 drop user foo@localhost;
 select * from information_schema.applicable_roles;

@@ -1,5 +1,6 @@
 include/master-slave.inc
 [connection master]
+set sql_mode='';
 drop database if exists mysqltest1;
 create database mysqltest1;
 use mysqltest1;
@@ -218,7 +219,7 @@ return unix_timestamp();
 end
 mysqltest1	fn2	FUNCTION	fn2	SQL	NO_SQL	NO	DEFINER		int(11)	begin
 return unix_timestamp();
-end	zedjzlcsjhd@localhost	#	#			latin1	latin1_swedish_ci	latin1_swedish_ci	begin
+end	zedjzlcsjhd@localhost	#	#	NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION		latin1	latin1_swedish_ci	latin1_swedish_ci	begin
 return unix_timestamp();
 end
 mysqltest1	fn3	FUNCTION	fn3	SQL	READS_SQL_DATA	NO	DEFINER		int(11)	begin
@@ -242,7 +243,7 @@ return unix_timestamp();
 end
 mysqltest1	fn2	FUNCTION	fn2	SQL	NO_SQL	NO	DEFINER		int(11)	begin
 return unix_timestamp();
-end	zedjzlcsjhd@localhost	#	#			latin1	latin1_swedish_ci	latin1_swedish_ci	begin
+end	zedjzlcsjhd@localhost	#	#	NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION		latin1	latin1_swedish_ci	latin1_swedish_ci	begin
 return unix_timestamp();
 end
 mysqltest1	fn3	FUNCTION	fn3	SQL	READS_SQL_DATA	NO	DEFINER		int(11)	begin
@@ -803,6 +804,7 @@ SET TIMESTAMP=t/*!*/;
 grant SELECT, INSERT on mysqltest1.t2 to "zedjzlcsjhd"@127.0.0.1
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=1342177280/*!*/;
 CREATE DEFINER=`zedjzlcsjhd`@`127.0.0.1` PROCEDURE `foo4`()
     DETERMINISTIC
 begin
@@ -821,6 +823,7 @@ COMMIT
 BEGIN
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=0/*!*/;
 insert into t1 values (15)
 /*!*/;
 SET TIMESTAMP=t/*!*/;
@@ -829,17 +832,20 @@ COMMIT
 BEGIN
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=1342177280/*!*/;
 insert into t2 values(3)
 /*!*/;
 SET TIMESTAMP=t/*!*/;
 COMMIT
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=0/*!*/;
 alter procedure foo4 sql security invoker
 /*!*/;
 BEGIN
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=1342177280/*!*/;
 insert into t2 values(3)
 /*!*/;
 SET TIMESTAMP=t/*!*/;
@@ -856,6 +862,7 @@ COMMIT
 BEGIN
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=0/*!*/;
 delete from t2
 /*!*/;
 SET TIMESTAMP=t/*!*/;
@@ -953,6 +960,7 @@ SET TIMESTAMP=t/*!*/;
 COMMIT
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=1342177280/*!*/;
 CREATE DEFINER=`zedjzlcsjhd`@`127.0.0.1` FUNCTION `fn2`() RETURNS int(11)
     NO SQL
 begin
@@ -960,6 +968,7 @@ return unix_timestamp();
 end
 /*!*/;
 SET TIMESTAMP=t/*!*/;
+SET @@session.sql_mode=0/*!*/;
 CREATE DEFINER=`root`@`localhost` FUNCTION `fn3`() RETURNS int(11)
     READS SQL DATA
 begin
@@ -1311,3 +1320,4 @@ drop table t1;
 drop procedure p1;
 # End of 5.5 tests.
 include/rpl_end.inc
+set sql_mode=default;

@@ -3,7 +3,8 @@
 
 # should work with embedded server after mysqltest is fixed
 --source include/not_embedded.inc
-
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 set @start_read_only= @@global.read_only;
 
 # Save the initial number of concurrent sessions
@@ -365,3 +366,5 @@ DROP TABLE t1;
 # Wait till all disconnects are completed
 --source include/wait_until_count_sessions.inc
 
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

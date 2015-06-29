@@ -1,3 +1,4 @@
+set sql_mode="";
 CREATE TABLE t1(a int) ENGINE=EXAMPLE;
 Warnings:
 Warning	1286	Unknown storage engine 'EXAMPLE'
@@ -334,3 +335,4 @@ UNINSTALL PLUGIN example;
 RENAME TABLE t1 TO t2;
 ERROR 42S02: Table 'test.t1' doesn't exist
 DROP TABLE t1;
+set sql_mode=default;

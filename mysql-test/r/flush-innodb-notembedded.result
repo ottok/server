@@ -1,3 +1,4 @@
+set sql_mode="";
 # Test 7: Check privileges required.
 #
 CREATE DATABASE db1;
@@ -31,4 +32,5 @@ DROP USER user1@localhost, user2@localhost, user3@localhost,
 user4@localhost, user5@localhost;
 DROP TABLE db1.t1;
 DROP DATABASE db1;
+set sql_mode=default;
 # End of 5.6 tests

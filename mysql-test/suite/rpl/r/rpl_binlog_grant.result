@@ -1,5 +1,6 @@
 include/master-slave.inc
 [connection master]
+set sql_mode='';
 create database d1;
 use d1;
 create table t (s1 int) engine=innodb;
@@ -25,4 +26,5 @@ Grants for x@y
 GRANT USAGE ON *.* TO 'x'@'y'
 drop user x@y;
 drop database d1;
+set sql_mode=default;
 include/rpl_end.inc

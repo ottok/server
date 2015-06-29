@@ -1,6 +1,8 @@
 # Works in statement-based and row-based binlogging.
 # Test that GRANT and other user management commands are replicated to the slave
 
+set global sql_mode="";
+set local sql_mode="";
 -- source include/master-slave.inc
 
 # do not be influenced by other tests.
@@ -363,4 +365,6 @@ SELECT Grantor FROM mysql.tables_priv WHERE User='user_bug27606';
 --connection master
 DROP USER user_bug27606@localhost;
 
+set global sql_mode=default;
+set local sql_mode=default;
 --source include/rpl_end.inc

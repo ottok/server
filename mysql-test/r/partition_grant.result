@@ -1,3 +1,5 @@
+set local sql_mode="";
+set global sql_mode="";
 drop schema if exists mysqltest_1;
 create schema mysqltest_1;
 use mysqltest_1;
@@ -31,4 +33,6 @@ ERROR HY000: Table has no partition for value 1
 drop table t1;
 drop user mysqltest_1@localhost;
 drop schema mysqltest_1;
+set local sql_mode=default;
+set global sql_mode=default;
 End of 5.1 tests

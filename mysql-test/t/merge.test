@@ -1899,11 +1899,12 @@ set @save_table_definition_cache=@@global.table_definition_cache;
 --echo #
 --echo # Set @@global.table_definition_cache to minimum
 --echo #
-set @@global.table_definition_cache=400;
+set @@global.table_definition_cache=2000;
+select @@table_definition_cache;
 set @a=null;
-let $1 = 400;
+let $1 = `select @@table_definition_cache;`;
 --echo #
---echo # Create 400 merge children
+--echo # Create 2000 merge children
 --echo #
 --disable_query_log
 while ($1)
@@ -1935,7 +1936,7 @@ deallocate prepare stmt;
 --echo #
 --echo # Cleanup
 --echo #
-let $1 = 400;
+let $1 = 2000;
 --disable_query_log
 while ($1)
 {

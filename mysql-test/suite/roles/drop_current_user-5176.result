@@ -1,4 +1,6 @@
+set sql_mode='';
 grant create user on *.* to foo@localhost;
+set sql_mode=default;
 drop user foo@localhost;
 select * from information_schema.applicable_roles;
 GRANTEE	ROLE_NAME	IS_GRANTABLE	IS_DEFAULT

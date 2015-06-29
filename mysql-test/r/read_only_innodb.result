@@ -1,3 +1,4 @@
+set sql_mode="";
 DROP TABLE IF EXISTS table_11733 ;
 grant CREATE, SELECT, DROP on *.* to test@localhost;
 set global read_only=0;
@@ -226,3 +227,4 @@ DROP TABLE temp1, temp2;
 SET GLOBAL READ_ONLY = OFF;
 DROP USER bug33669@localhost;
 DROP DATABASE db1;
+set sql_mode=default;

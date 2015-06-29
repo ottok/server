@@ -1,6 +1,8 @@
 # Can't test with embedded server
 -- source include/not_embedded.inc
 # Disable concurrent inserts to avoid test failures
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 set @old_concurrent_insert= @@global.concurrent_insert;
 set @@global.concurrent_insert= 0;
 
@@ -487,5 +489,7 @@ drop user foo1@localhost;
 
 set @@global.concurrent_insert= @old_concurrent_insert;
 
+set LOCAL sql_mode=default;
+set GLOBAL sql_mode=default;
 # Wait till all disconnects are completed
 --source include/wait_until_count_sessions.inc

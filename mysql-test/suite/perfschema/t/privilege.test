@@ -5,6 +5,8 @@
 
 show grants;
 
+set sql_mode="";
+
 grant ALL on *.* to 'pfs_user_1'@localhost with GRANT OPTION;
 
 # Test denied privileges on performance_schema.*
@@ -329,3 +331,4 @@ UPDATE performance_schema.setup_timers SET timer_name = 'CYCLE'       where name
 UPDATE performance_schema.setup_timers SET timer_name = 'NANOSECOND'  where name="stage";
 UPDATE performance_schema.setup_timers SET timer_name = 'NANOSECOND'  where name="statement";
 
+set sql_mode=default;

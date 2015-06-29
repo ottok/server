@@ -66,11 +66,12 @@
 --source ../include/wait_for_pfs_thread_count.inc
 
 --disable_query_log
-
+set sql_mode="";
 grant ALL on *.* to user1@localhost;
 grant ALL on *.* to user2@localhost;
 grant ALL on *.* to user3@localhost;
 grant ALL on *.* to user4@localhost;
+set sql_mode=default;
 
 flush privileges;
 

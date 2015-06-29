@@ -4,6 +4,9 @@
 # Save the initial number of concurrent sessions
 --source include/count_sessions.inc
 
+set global sql_mode="";
+set local sql_mode="";
+
 # Bug#8471 IP address with mask fail when skip-name-resolve is on
 GRANT ALL ON test.* TO mysqltest_1@'127.0.0.1/255.255.255.255';
 SHOW GRANTS FOR mysqltest_1@'127.0.0.1/255.255.255.255';
@@ -49,4 +52,6 @@ SET @@LOCAL.skip_name_resolve=0;
 --error ER_INCORRECT_GLOBAL_LOCAL_VAR
 SET @@GLOBAL.skip_name_resolve=0;
 
+set global sql_mode=default;
+set local sql_mode=default;
 --echo End of 5.1 tests

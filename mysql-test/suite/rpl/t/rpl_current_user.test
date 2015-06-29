@@ -12,6 +12,8 @@
 ##############################################################################
 
 source include/have_binlog_format_statement.inc;
+set local sql_mode="";
+set global sql_mode="";
 
 --let $rpl_topology= 1->2->3
 --source include/rpl_init.inc
@@ -236,3 +238,5 @@ DROP FUNCTION my_user;
 DROP EVENT e1;
 --source include/rpl_end.inc
 
+set local sql_mode=default;
+set global sql_mode=default;

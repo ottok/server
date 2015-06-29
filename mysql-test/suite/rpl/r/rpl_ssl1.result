@@ -1,6 +1,8 @@
 include/master-slave.inc
 [connection master]
+set sql_mode="";
 grant replication slave on *.* to replssl@localhost require ssl;
+set sql_mode=default;
 create table t1 (t int);
 stop slave;
 include/wait_for_slave_to_stop.inc

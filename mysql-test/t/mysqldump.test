@@ -2488,3 +2488,6 @@ drop table t1;
 select * from t1;
 drop table t1;
 --remove_file $MYSQLTEST_VARDIR/tmp/mysqldump-test.out
+
+SET local SQL_MODE=default;
+SET global SQL_MODE=default;

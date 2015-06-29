@@ -1,3 +1,5 @@
+set sql_mode="";
+set global secure_auth=0;
 #
 # functional change user tests
 #
@@ -136,3 +138,6 @@ if ($after != $before){
   die The value of com_select changed during change_user;
 }
 echo Value of com_select did not change;
+
+set sql_mode=default;
+set global secure_auth=default;

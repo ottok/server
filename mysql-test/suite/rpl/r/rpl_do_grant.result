@@ -1,3 +1,5 @@
+set global sql_mode="";
+set local sql_mode="";
 include/master-slave.inc
 [connection master]
 delete from mysql.user where user=_binary'rpl_do_grant';
@@ -263,4 +265,6 @@ SELECT Grantor FROM mysql.tables_priv WHERE User='user_bug27606';
 Grantor
 root@localhost
 DROP USER user_bug27606@localhost;
+set global sql_mode=default;
+set local sql_mode=default;
 include/rpl_end.inc

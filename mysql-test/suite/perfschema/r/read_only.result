@@ -1,6 +1,8 @@
 use performance_schema;
 set @start_read_only= @@global.read_only;
+set sql_mode="";
 grant SELECT, UPDATE on performance_schema.* to pfsuser@localhost;
+set sql_mode=default;
 flush privileges;
 connect (con1, localhost, pfsuser, , test);
 connection default;

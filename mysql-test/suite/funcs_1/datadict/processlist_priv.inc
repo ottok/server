@@ -59,6 +59,8 @@
 #                                                                      #
 ########################################################################
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 # The following variables are used in "datadict_priv.inc" and here.
 #
 # information_schema table to be tested
@@ -480,3 +482,6 @@ DROP USER ddicttestuser1@'localhost';
 DROP USER ddicttestuser2@'localhost';
 REVOKE USAGE ON *.* FROM ''@'localhost';
 DROP USER ''@'localhost';
+
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

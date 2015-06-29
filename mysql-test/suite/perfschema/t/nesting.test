@@ -10,7 +10,9 @@
 
 --disable_query_log
 
+set sql_mode="";
 grant ALL on *.* to user1@localhost;
+set sql_mode=default;
 
 flush privileges;
 
@@ -172,7 +174,9 @@ order by relative_event_id asc;
 --disconnect con1
 
 --disable_query_log
+set sql_mode="";
 revoke all privileges, grant option from user1@localhost;
+set sql_mode=default;
 drop user user1@localhost;
 flush privileges;
 

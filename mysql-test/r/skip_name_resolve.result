@@ -1,3 +1,5 @@
+set global sql_mode="";
+set local sql_mode="";
 GRANT ALL ON test.* TO mysqltest_1@'127.0.0.1/255.255.255.255';
 SHOW GRANTS FOR mysqltest_1@'127.0.0.1/255.255.255.255';
 Grants for mysqltest_1@127.0.0.1/255.255.255.255
@@ -35,4 +37,6 @@ SET @@LOCAL.skip_name_resolve=0;
 ERROR HY000: Variable 'skip_name_resolve' is a read only variable
 SET @@GLOBAL.skip_name_resolve=0;
 ERROR HY000: Variable 'skip_name_resolve' is a read only variable
+set global sql_mode=default;
+set local sql_mode=default;
 End of 5.1 tests

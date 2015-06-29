@@ -1,3 +1,5 @@
+set local sql_mode="";
+set global sql_mode="";
 #
 # Bug#51770: UNINSTALL PLUGIN requires no privileges
 #
@@ -10,3 +12,5 @@ UNINSTALL PLUGIN example;
 DROP USER bug51770@localhost;
 INSTALL PLUGIN example SONAME '../ha_example.so';
 ERROR HY000: No paths allowed for shared library
+set local sql_mode=default;
+set global sql_mode=default;

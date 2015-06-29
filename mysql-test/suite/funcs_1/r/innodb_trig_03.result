@@ -206,11 +206,11 @@ Testcase 3.5.3.7b:
 ------------------
 revoke ALL PRIVILEGES, GRANT OPTION FROM test_noprivs@localhost;
 grant TRIGGER on *.* to test_noprivs;
+ERROR 28000: Can't find any matching row in the user table
 grant ALL  on priv_db.* to test_noprivs@localhost;
 revoke UPDATE  on priv_db.* from test_noprivs@localhost;
 show grants for test_noprivs;
-Grants for test_noprivs@%
-GRANT TRIGGER ON *.* TO 'test_noprivs'@'%'
+ERROR 42000: There is no such grant defined for user 'test_noprivs' on host '%'
 revoke ALL PRIVILEGES, GRANT OPTION FROM test_yesprivs@localhost;
 grant TRIGGER on *.* to test_yesprivs@localhost;
 grant UPDATE on priv_db.* to test_yesprivs@localhost;
@@ -281,8 +281,7 @@ grant TRIGGER on *.* to test_noprivs@localhost;
 grant ALL  on priv_db.t1 to test_noprivs@localhost;
 revoke UPDATE  on priv_db.t1 from test_noprivs@localhost;
 show grants for test_noprivs;
-Grants for test_noprivs@%
-GRANT TRIGGER ON *.* TO 'test_noprivs'@'%'
+ERROR 42000: There is no such grant defined for user 'test_noprivs' on host '%'
 revoke ALL PRIVILEGES, GRANT OPTION FROM test_yesprivs@localhost;
 grant TRIGGER on *.* to test_yesprivs@localhost;
 grant UPDATE on priv_db.t1 to test_yesprivs@localhost;
@@ -335,14 +334,12 @@ revoke ALL PRIVILEGES, GRANT OPTION FROM test_noprivs@localhost;
 grant TRIGGER on *.* to test_noprivs@localhost;
 grant SELECT (f1), INSERT (f1) on priv_db.t1 to test_noprivs@localhost;
 show grants for test_noprivs;
-Grants for test_noprivs@%
-GRANT TRIGGER ON *.* TO 'test_noprivs'@'%'
+ERROR 42000: There is no such grant defined for user 'test_noprivs' on host '%'
 revoke ALL PRIVILEGES, GRANT OPTION FROM test_yesprivs@localhost;
 grant TRIGGER on *.* to test_yesprivs@localhost;
 grant UPDATE (f1) on priv_db.t1 to test_yesprivs@localhost;
 show grants for test_noprivs;
-Grants for test_noprivs@%
-GRANT TRIGGER ON *.* TO 'test_noprivs'@'%'
+ERROR 42000: There is no such grant defined for user 'test_noprivs' on host '%'
 show grants;
 Grants for test_noprivs@localhost
 GRANT TRIGGER ON *.* TO 'test_noprivs'@'localhost' IDENTIFIED BY PASSWORD '*C49735D016A099C0CF104EF9183F374A54CA2576'
@@ -671,5 +668,6 @@ drop database if exists priv_db;
 drop user test_yesprivs@localhost;
 drop user test_noprivs@localhost;
 drop user test_noprivs;
+ERROR HY000: Operation DROP USER failed for 'test_noprivs'@'%'
 use test;
 drop table tb3;

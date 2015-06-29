@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 set @start_read_only= @@global.read_only;
 DROP TABLE IF EXISTS t1,t2,t3;
 grant CREATE, SELECT, DROP on *.* to test@localhost;
@@ -197,3 +199,5 @@ COMMIT;
 DROP USER user1;
 SET GLOBAL read_only= 0;
 DROP TABLE t1;
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

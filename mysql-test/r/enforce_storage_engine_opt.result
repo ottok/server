@@ -1,3 +1,4 @@
+SET SQL_MODE="";
 create table t1 (c1 int primary key auto_increment, c2 varchar(10)) engine=memory;
 Warnings:
 Note	1266	Using storage engine MyISAM for table 't1'
@@ -12,3 +13,4 @@ set session sql_mode='no_engine_substitution';
 create table t2 (c1 int primary key auto_increment, c2 varchar(10)) engine=memory;
 ERROR 42000: Unknown storage engine 'MEMORY'
 drop table t1;
+SET SQL_MODE=default;

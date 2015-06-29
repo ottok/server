@@ -1,3 +1,4 @@
+set sql_mode="";
 CREATE DATABASE test_user_db;
 SELECT user,plugin,authentication_string FROM mysql.user WHERE user != 'root';
 user	plugin	authentication_string
@@ -323,3 +324,4 @@ plug_dest			*560881EB651416CEF77314D07D55EDCD5FC1BD6D
 DROP USER grant_user,plug_dest;
 set @@sql_mode= @save_sql_mode;
 DROP DATABASE test_user_db;
+set sql_mode=default;

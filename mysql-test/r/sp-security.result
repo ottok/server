@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 use test;
 grant usage on *.* to user1@localhost;
 flush privileges;
@@ -661,3 +663,5 @@ GRANT EXECUTE ON PROCEDURE `test`.`sp1` TO 'root'@'localhost'
 GRANT PROXY ON ''@'%' TO 'root'@'localhost' WITH GRANT OPTION
 drop procedure sp1;
 set password='';
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

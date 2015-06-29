@@ -4,6 +4,9 @@
 --source include/have_debug.inc
 --source include/have_innodb.inc
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
+
 --disable_warnings
 drop table if exists t0, t1, t2, t3, t4;
 drop view if exists v1;
@@ -1202,3 +1205,5 @@ connection default;
 disconnect con1;
 set debug_sync='RESET';
 
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

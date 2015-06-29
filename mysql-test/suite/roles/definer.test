@@ -14,6 +14,7 @@ create table t1 (a int, b int, c int);
 insert t1 values (1,10,100),(2,20,200);
 
 # non-priv role granted
+set sql_mode="";
 create role role1;
 grant select (a) on mysqltest1.t1 to role1;
 grant event,execute,trigger on mysqltest1.* to role1;
@@ -330,3 +331,4 @@ execute stmt1;
 show grants for utest;
 drop role utest;
 
+set sql_mode=default;

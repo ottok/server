@@ -1,3 +1,4 @@
+set sql_mode="";
 CREATE TABLE t1(a int) ENGINE=BLACKHOLE;
 Warnings:
 Warning	1286	Unknown storage engine 'BLACKHOLE'
@@ -16,3 +17,4 @@ SELECT 1;
 UNINSTALL PLUGIN blackhole;
 UNINSTALL PLUGIN blackhole;
 ERROR 42000: PLUGIN blackhole does not exist
+set sql_mode=default;

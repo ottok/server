@@ -1,3 +1,4 @@
+set sql_mode="";
 #
 # MDEV-4594 - CREATE SERVER crashes embedded
 #
@@ -23,3 +24,4 @@ SELECT * FROM mysql.servers;
 Server_name	Host	Db	Username	Password	Port	Socket	Wrapper	Owner
 s1					3306	bar	mysql	
 DROP SERVER s1;
+set sql_mode=default;

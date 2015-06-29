@@ -8,7 +8,9 @@ if (!$ADT_NULL_SO) {
 set @old_global_general_log=@@global.general_log;
 set global general_log=OFF;
 
+set sql_mode="";
 grant select on *.* to testuser@localhost;
+set sql_mode=default;
 
 --disable_ps_protocol
 install plugin audit_null soname 'adt_null';

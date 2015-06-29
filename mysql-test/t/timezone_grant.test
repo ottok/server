@@ -4,6 +4,8 @@
 # Save the initial number of concurrent sessions
 --source include/count_sessions.inc
 
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 --disable_warnings
 drop tables if exists t1, t2;
 drop view if exists v1;
@@ -118,6 +120,8 @@ disconnect tzuser3;
 drop table t1;
 drop user mysqltest_1@localhost;
 
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;
 # End of 5.0 tests
 
 # Wait till we reached the initial number of concurrent sessions

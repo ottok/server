@@ -1,6 +1,8 @@
 --source include/not_embedded.inc
 --source include/have_example_plugin.inc
 
+set local sql_mode="";
+set global sql_mode="";
 --echo #
 --echo # Bug#51770: UNINSTALL PLUGIN requires no privileges
 --echo #
@@ -30,3 +32,5 @@ let $path = `select CONCAT_WS('/', '..', '$HA_EXAMPLE_SO')`;
 --error ER_UDF_NO_PATHS
 eval INSTALL PLUGIN example SONAME '$path';
 
+set local sql_mode=default;
+set global sql_mode=default;

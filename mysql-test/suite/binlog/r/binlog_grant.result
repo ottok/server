@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 reset master;
 set @saved_binlog_format = @@global.binlog_format;
 create user mysqltest_1@localhost;
@@ -26,3 +28,5 @@ GRANT REPLICATION CLIENT ON *.* TO 'mysqltest_1'@'localhost';
 SHOW MASTER LOGS;
 SHOW BINARY LOGS;
 DROP USER 'mysqltest_1'@'localhost';
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

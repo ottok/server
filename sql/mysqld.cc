@@ -2293,7 +2293,7 @@ static void set_ports()
     if ((env = getenv("MYSQL_TCP_PORT")))
     {
       mysqld_port= (uint) atoi(env);
-      mark_sys_var_value_origin(&mysqld_port, sys_var::ENV);
+      set_sys_var_value_origin(&mysqld_port, sys_var::ENV);
     }
   }
   if (!mysqld_unix_port)
@@ -2306,7 +2306,7 @@ static void set_ports()
     if ((env = getenv("MYSQL_UNIX_PORT")))
     {
       mysqld_unix_port= env;
-      mark_sys_var_value_origin(&mysqld_unix_port, sys_var::ENV);
+      set_sys_var_value_origin(&mysqld_unix_port, sys_var::ENV);
     }
   }
 }
@@ -4175,7 +4175,7 @@ static int init_common_variables()
   strmake(pidfile_name, opt_log_basename, sizeof(pidfile_name)-5);
   strmov(fn_ext(pidfile_name),".pid");		// Add proper extension
   SYSVAR_AUTOSIZE(pidfile_name_ptr, pidfile_name);
-  mark_sys_var_value_origin(&opt_tc_log_size, sys_var::AUTO);
+  set_sys_var_value_origin(&opt_tc_log_size, sys_var::AUTO);
 
   /*
     The default-storage-engine entry in my_long_options should have a
@@ -4315,6 +4315,27 @@ static int init_common_variables()
    }
   }
 #endif /* HAVE_SOLARIS_LARGE_PAGES */
+
+
+  /* Fix host_cache_size. */
+  if (IS_SYSVAR_AUTOSIZE(&host_cache_size))
+  {
+    if (max_connections <= 628 - 128)
+      SYSVAR_AUTOSIZE(host_cache_size, 128 + max_connections);
+    else if (max_connections <= ((ulong)(2000 - 628)) * 20 + 500)
+      SYSVAR_AUTOSIZE(host_cache_size, 628 + ((max_connections - 500) / 20));
+    else
+      SYSVAR_AUTOSIZE(host_cache_size, 2000);
+  }
+
+  /* Fix back_log */
+  if (back_log == 0 || IS_SYSVAR_AUTOSIZE(&back_log))
+  {
+    if ((900 - 50) * 5 >= max_connections)
+     SYSVAR_AUTOSIZE(back_log, (50 + max_connections / 5));
+    else
+     SYSVAR_AUTOSIZE(back_log, 900);
+  }
 
   /* connections and databases needs lots of files */
   {
@@ -4859,9 +4880,9 @@ static int init_server_components()
     unireg_abort(1);
 
   query_cache_set_min_res_unit(query_cache_min_res_unit);
+  query_cache_result_size_limit(query_cache_limit);
   query_cache_init();
   query_cache_resize(query_cache_size);
-  query_cache_result_size_limit(query_cache_limit);
   my_rnd_init(&sql_rand,(ulong) server_start_time,(ulong) server_start_time/2);
   setup_fpu();
   init_thr_lock();
@@ -5534,6 +5555,12 @@ int mysqld_main(int argc, char **argv)
   my_timer_init(&sys_timer_info);
 
   int ho_error __attribute__((unused))= handle_early_options();
+
+  /* fix tdc_size */
+  if (IS_SYSVAR_AUTOSIZE(&tdc_size))
+  {
+    SYSVAR_AUTOSIZE(tdc_size, MY_MIN(400 + tdc_size / 2, 2000));
+  }
 
 #ifdef WITH_PERFSCHEMA_STORAGE_ENGINE
   if (ho_error == 0)
@@ -8746,7 +8773,7 @@ static int mysql_init_variables(void)
   if (!(tmpenv = getenv("MY_BASEDIR_VERSION")))
     tmpenv = DEFAULT_MYSQL_HOME;
   strmake_buf(mysql_home, tmpenv);
-  mark_sys_var_value_origin(&mysql_home_ptr, sys_var::ENV);
+  set_sys_var_value_origin(&mysql_home_ptr, sys_var::ENV);
 #endif
 
   if (wsrep_init_vars())
@@ -8761,6 +8788,11 @@ mysqld_get_one_option(int optid, const struct my_option *opt, char *argument)
   if (opt->app_type)
   {
     sys_var *var= (sys_var*) opt->app_type;
+    if (argument == autoset_my_option)
+    {
+      var->value_origin= sys_var::AUTO;
+      return 0;
+    }
     var->value_origin= sys_var::CONFIG;
   }
 
@@ -8873,8 +8905,8 @@ mysqld_get_one_option(int optid, const struct my_option *opt, char *argument)
     make_default_log_name(&opt_bin_logname, "-bin", true);
     /* Binary log index file */
     make_default_log_name(&opt_binlog_index_name, "-bin.index", true);
-    mark_sys_var_value_origin(&opt_logname, sys_var::AUTO);
-    mark_sys_var_value_origin(&opt_slow_logname, sys_var::AUTO);
+    set_sys_var_value_origin(&opt_logname, sys_var::AUTO);
+    set_sys_var_value_origin(&opt_slow_logname, sys_var::AUTO);
     if (!opt_logname || !opt_slow_logname || !opt_bin_logname ||
         !opt_binlog_index_name)
       return 1;
@@ -8884,7 +8916,7 @@ mysqld_get_one_option(int optid, const struct my_option *opt, char *argument)
     make_default_log_name(&opt_relay_logname, "-relay-bin", true);
     /* Relay log index file */
     make_default_log_name(&opt_relaylog_index_name, "-relay-bin.index", true);
-    mark_sys_var_value_origin(&opt_relay_logname, sys_var::AUTO);
+    set_sys_var_value_origin(&opt_relay_logname, sys_var::AUTO);
     if (!opt_relay_logname || !opt_relaylog_index_name)
       return 1;
 #endif
@@ -9080,6 +9112,7 @@ mysqld_get_one_option(int optid, const struct my_option *opt, char *argument)
     max_long_data_size_used= true;
     break;
   case OPT_PFS_INSTRUMENT:
+  {
 #ifdef WITH_PERFSCHEMA_STORAGE_ENGINE
 #ifndef EMBEDDED_LIBRARY
     /* Parse instrument name and value from argument string */
@@ -9148,6 +9181,7 @@ mysqld_get_one_option(int optid, const struct my_option *opt, char *argument)
 #endif /* EMBEDDED_LIBRARY */
 #endif
     break;
+  }
   }
   return 0;
 }

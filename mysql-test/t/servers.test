@@ -1,4 +1,5 @@
 # Generic tests for servers (do not require FEDERATED)
+set sql_mode="";
 
 --echo #
 --echo # MDEV-4594 - CREATE SERVER crashes embedded
@@ -23,3 +24,4 @@ SELECT * FROM mysql.servers;
 DROP SERVER s1;
 
 
+set sql_mode=default;

@@ -53,11 +53,13 @@
 
 --disable_query_log
 
+set sql_mode="";
 grant ALL on *.* to user1@localhost;
 grant ALL on *.* to user2@localhost;
 grant ALL on *.* to user3@localhost;
 grant ALL on *.* to user4@localhost;
 grant ALL on *.* to user5@localhost;
+set sql_mode=default;
 
 flush privileges;
 

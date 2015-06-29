@@ -1,4 +1,6 @@
+set sql_mode="";
 grant create user on *.* to foo@localhost;
+set sql_mode=default;
 create user current_user;
 ERROR HY000: Operation CREATE USER failed for CURRENT_USER
 create user current_role;

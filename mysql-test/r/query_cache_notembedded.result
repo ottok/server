@@ -1,3 +1,7 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
+SET GLOBAL query_cache_type=ON;
+SET LOCAL query_cache_type=ON;
 set GLOBAL query_cache_size=1355776;
 flush query cache;
 flush query cache;
@@ -379,7 +383,8 @@ Qcache_queries_in_cache	1
 USE test;
 DROP DATABASE bug30269;
 DROP USER 'bug30269'@'localhost';
-set GLOBAL query_cache_type=default;
+set GLOBAL query_cache_type=ON;
+set LOCAL query_cache_type=ON;
 set GLOBAL query_cache_limit=default;
 set GLOBAL query_cache_min_res_unit=default;
 set GLOBAL query_cache_size=default;
@@ -435,3 +440,7 @@ flush query cache|
 delete from t1|
 drop procedure bug3583|
 drop table t1|
+SET GLOBAL query_cache_type=default;
+SET LOCAL query_cache_type=default;
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

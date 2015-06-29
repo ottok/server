@@ -1,3 +1,5 @@
+set global sql_mode="";
+set local sql_mode="";
 grant create user on *.* to foo@localhost;
 create role role1;
 create role role2 with admin current_user;
@@ -150,3 +152,5 @@ revoke role4 from current_user;
 grant role4 to current_user;
 drop role role1, role2, role3, role4, role5, role6;
 drop user foo@localhost;
+set global sql_mode=default;
+set local sql_mode=default;

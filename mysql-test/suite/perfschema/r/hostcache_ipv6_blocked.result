@@ -24,9 +24,11 @@ select `User`, `Host` from mysql.`user` where `user` like 'santa.claus.%';
 User	Host
 select @@global.max_connect_errors into @saved_max_connect_errors;
 set global max_connect_errors = 3;
+set sql_mode="";
 grant select on test.* to 'root'@'santa.claus.ipv6.example.com';
 create user 'quota'@'santa.claus.ipv6.example.com';
 grant select on test.* to 'quota'@'santa.claus.ipv6.example.com';
+set sql_mode=default;
 select "Con1 is alive";
 Con1 is alive
 Con1 is alive

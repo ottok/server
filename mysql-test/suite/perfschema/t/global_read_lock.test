@@ -11,7 +11,9 @@ use performance_schema;
 # Ensure that instrumentation is turned on when we create new connection.
 update performance_schema.setup_instruments set enabled='YES';
 
+set sql_mode="";
 grant SELECT, UPDATE, LOCK TABLES on performance_schema.* to pfsuser@localhost;
+set sql_mode=default;
 flush privileges;
 
 --echo connect (con1, localhost, pfsuser, , test);

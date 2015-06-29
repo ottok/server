@@ -1,6 +1,8 @@
 set @old_global_general_log=@@global.general_log;
 set global general_log=OFF;
+set sql_mode="";
 grant select on *.* to testuser@localhost;
+set sql_mode=default;
 install plugin audit_null soname 'adt_null';
 select 1;
 1

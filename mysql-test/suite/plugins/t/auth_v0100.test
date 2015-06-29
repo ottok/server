@@ -9,7 +9,9 @@ install soname 'auth_0x0100';
 select plugin_name, plugin_type_version from information_schema.plugins where plugin_type='authentication' order by plugin_name;
 
 create user tt identified via auth_0x0100;
+set sql_mode="";
 grant select on test.* to zzzzzzzzzzzzzzzz;
+set sql_mode=default;
 
 --replace_result $MASTER_MYSOCK MASTER_MYSOCK $MASTER_MYPORT MASTER_MYPORT
 --error ER_ACCESS_DENIED_ERROR

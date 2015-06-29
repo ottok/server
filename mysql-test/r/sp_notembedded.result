@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 set @old_concurrent_insert= @@global.concurrent_insert;
 set @@global.concurrent_insert= 0;
 drop table if exists t1,t3;
@@ -304,3 +306,5 @@ GRANT EXECUTE, ALTER ROUTINE ON PROCEDURE `test`.`spfoo` TO 'foo1'@'localhost'
 drop procedure spfoo;
 drop user foo1@localhost;
 set @@global.concurrent_insert= @old_concurrent_insert;
+set LOCAL sql_mode=default;
+set GLOBAL sql_mode=default;

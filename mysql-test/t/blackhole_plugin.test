@@ -1,6 +1,7 @@
 if (!$HA_BLACKHOLE_SO) {
   --skip Need blackhole plugin
 }
+set sql_mode="";
 
 CREATE TABLE t1(a int) ENGINE=BLACKHOLE;
 DROP TABLE t1;
@@ -30,3 +31,4 @@ UNINSTALL PLUGIN blackhole;
 --error ER_SP_DOES_NOT_EXIST
 UNINSTALL PLUGIN blackhole;
 
+set sql_mode=default;

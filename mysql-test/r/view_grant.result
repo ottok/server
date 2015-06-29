@@ -1,3 +1,5 @@
+set GLOBAL sql_mode="";
+set LOCAL sql_mode="";
 drop database if exists mysqltest;
 drop view if exists v1,v2,v3;
 grant create view on test.* to test@localhost;
@@ -1724,3 +1726,5 @@ update mysqltest1.t11 as t11, mysqltest2.v42 as v4 set v4.val= 'test20'
 drop user user_11766767;
 drop database mysqltest1;
 drop database mysqltest2;
+set GLOBAL sql_mode=default;
+set LOCAL sql_mode=default;

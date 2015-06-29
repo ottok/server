@@ -2,6 +2,8 @@
 # Grant tests not performed with embedded server
 -- source include/not_embedded.inc
 
+set local sql_mode="";
+set global sql_mode="";
 --disable_warnings
 drop schema if exists mysqltest_1;
 --enable_warnings
@@ -78,4 +80,6 @@ drop table t1;
 drop user mysqltest_1@localhost;
 drop schema mysqltest_1;
 
+set local sql_mode=default;
+set global sql_mode=default;
 --echo End of 5.1 tests
