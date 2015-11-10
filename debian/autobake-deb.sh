@@ -21,6 +21,9 @@ then
   export DEB_BUILD_OPTIONS="nocheck"
 fi
 
+# Run test cases in parallel
+export MTR_PARALLEL=6
+
 export MARIADB_OPTIONAL_DEBS=""
 
 # Find major.minor version.
