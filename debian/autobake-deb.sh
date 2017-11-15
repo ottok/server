@@ -6,16 +6,11 @@
 # Exit immediately on any error
 set -e
 
-# On Buildbot, don't run the mysql-test-run test suite as part of build.
-# It takes a lot of time, and we will do a better test anyway in
-# Buildbot, running the test suite from installed .debs on a clean VM.
-# On Travis-CI we want to simulate the full build, including tests.
-# Also on Travis-CI it is useful not to override the DEB_BUILD_OPTIONS
-# at this stage at all.
-if [[ ! $TRAVIS ]]
-then
-  export DEB_BUILD_OPTIONS="nocheck"
-fi
+# This file is invocated from Buildbot and Travis-CI to build deb packages.
+# As both of those CI systems have many parallel jobs that include different
+# parts of the test suite, we don't need to run the mysql-test-run at all when
+# building the deb packages here.
+export DEB_BUILD_OPTIONS="nocheck $DEB_BUILD_OPTIONS"
 
 # Travis-CI optimizations
 if [[ $TRAVIS ]]
