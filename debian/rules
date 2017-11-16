@@ -38,6 +38,8 @@ else
     NUMJOBS = 1
 endif
 
+MAKEFLAGS += -j$(NUMJOBS)
+
 # Ignore test suite exit code on unstable platforms
 ifneq (,$(filter $(ARCH), mips mipsel))
     TESTSUITE_FAIL_CMD:=true
@@ -143,6 +145,8 @@ override_dh_auto_install:
 	# Delete all of mysql-test as it is not used on Travis-CI and we need to
 	# save both time and disk space.
 	rm -rf $(BUILDDIR)/mysql-test
+	free -m
+	cat /proc/cpuinfo | grep name
 	df -h
 	du -sh $(BUILDDIR)/*
 
