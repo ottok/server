@@ -94,9 +94,7 @@ endif
 	    -DBUILD_CONFIG=mysql_release \
 	    -DINSTALL_LIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 	    -DINSTALL_PLUGINDIR=lib/mysql/plugin \
-	    -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test \
-			-DPLUGIN_ROCKSDB=false \
-			-DWITHOUT_TOKUDB=true \
+	    -DINSTALL_MYSQLTESTDIR=false \
 	    -DDEB=$(DISTRIBUTION) ..'
 	touch $@
 
