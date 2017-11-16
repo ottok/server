@@ -21,6 +21,12 @@ then
   # Don't include test suite package on Travis-CI to make the build time shorter
   sed '/Package: mariadb-test-data/,+28d' -i debian/control
   sed '/Package: mariadb-test/,+36d' -i debian/control
+
+  # Don't build the test package at all to save time and disk space
+  sed 's|DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test|DINSTALL_MYSQLTESTDIR=false|' -i debian/rules
+
+  # Also skip building RocksDB and TokuDB to save even more time and disk space
+  sed 's|-DDEB|-DWITHOUT_TOKUDB_STORAGE_ENGINE=true -DWITHOUT_ROCKSDB_STORAGE_ENGINE=true -DDEB|' -i debian/rules
 fi
 
 

@@ -94,7 +94,7 @@ endif
 	    -DBUILD_CONFIG=mysql_release \
 	    -DINSTALL_LIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 	    -DINSTALL_PLUGINDIR=lib/mysql/plugin \
-	    -DINSTALL_MYSQLTESTDIR=false \
+	    -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test \
 	    -DDEB=$(DISTRIBUTION) ..'
 	touch $@
 
@@ -103,10 +103,6 @@ override_dh_auto_build:
 	@echo "RULES.$@"
 	# Print build env info to help debug builds on different platforms
 	dpkg-architecture
-	echo "MAKEFLAGS $(MAKEFLAGS)"
-	echo "NUMJOBS $(NUMJOBS)"
-	echo "DEB_BUILD_OPTIONS $(DEB_BUILD_OPTIONS)"
-	echo "TRAVIS $(TRAVIS)"
 	cd $(BUILDDIR) && $(MAKE)
 	touch $@
 
@@ -142,14 +138,6 @@ override_dh_auto_install:
 	# Copy systemd files to a location available for dh_installinit
 	cp $(BUILDDIR)/support-files/mariadb.service debian/mariadb-server-10.3.mariadb.service
 	cp $(BUILDDIR)/support-files/mariadb@.service debian/mariadb-server-10.3.mariadb@.service
-
-	# Delete all of mysql-test as it is not used on Travis-CI and we need to
-	# save both time and disk space.
-	rm -rf mysql-test
-	free -m
-	cat /proc/cpuinfo | grep name
-	df -h
-	du -sh $(BUILDDIR)/*
 
 	# make install
 	cd $(BUILDDIR) && $(MAKE) install DESTDIR=$(TMP)
