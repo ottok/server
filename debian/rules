@@ -95,6 +95,8 @@ endif
 	    -DINSTALL_LIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 	    -DINSTALL_PLUGINDIR=lib/mysql/plugin \
 	    -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test \
+			-DPLUGIN_ROCKSDB=false \
+			-DWITHOUT_TOKUDB=true \
 	    -DDEB=$(DISTRIBUTION) ..'
 	touch $@
 
@@ -106,6 +108,7 @@ override_dh_auto_build:
 	echo "MAKEFLAGS $(MAKEFLAGS)"
 	echo "NUMJOBS $(NUMJOBS)"
 	echo "DEB_BUILD_OPTIONS $(DEB_BUILD_OPTIONS)"
+	echo "TRAVIS $(TRAVIS)"
 	cd $(BUILDDIR) && $(MAKE)
 	touch $@
 
@@ -144,7 +147,7 @@ override_dh_auto_install:
 
 	# Delete all of mysql-test as it is not used on Travis-CI and we need to
 	# save both time and disk space.
-	rm -rf $(BUILDDIR)/mysql-test
+	rm -rf mysql-test
 	free -m
 	cat /proc/cpuinfo | grep name
 	df -h

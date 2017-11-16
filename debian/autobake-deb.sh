@@ -72,11 +72,11 @@ fi
 GCCVERSION=$(gcc -dumpversion | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$/&00/')
 # Don't build rocksdb package if gcc version is less than 4.8 or we are running on
 # x86 32 bit.
-if [[ $GCCVERSION -lt 40800 ]] || [[ $(arch) =~ i[346]86 ]]
+if [[ $GCCVERSION -lt 40800 ]] || [[ $(arch) =~ i[346]86 ]] || [[ $TRAVIS ]]
 then
   sed '/Package: mariadb-plugin-rocksdb/,+11d' -i debian/control
 fi
-if [[ $GCCVERSION -lt 40800 ]]
+if [[ $GCCVERSION -lt 40800 ]] || [[ $TRAVIS ]]
 then
   sed '/Package: mariadb-plugin-aws-key-management-10.2/,+13d' -i debian/control
 fi
