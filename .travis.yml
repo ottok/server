@@ -22,7 +22,7 @@ cache:
 
 cache:
   directories:
-    - /usr/local/Cellar
+    - /usr/local/Cellar # Fails do to permission error, should be under /home/travis/Cellar? or MacOS only?
 
 env:
   matrix:
@@ -122,7 +122,7 @@ matrix:
 #        build_command_prepend:
 #          - source .travis.compiler.sh
 #          - ${MYSQL_BUILD_CC} --version ; ${MYSQL_BUILD_CXX} --version
-#          - cmake . 
+#          - cmake .
 #                   -DCMAKE_BUILD_TYPE=Debug
 #                   -DWITH_SSL=system -DWITH_ZLIB=system
 #                   -DWITHOUT_TOKUDB_STORAGE_ENGINE=ON -DWITHOUT_MROONGA_STORAGE_ENGINE=ON
