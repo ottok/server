@@ -17,8 +17,10 @@ compiler:
   - clang
 
 cache:
-  apt: true
-  ccache: true
+  - apt
+  - ccache # Does not currently work for clang builds: https://github.com/travis-ci/travis-ci/issues/6201
+
+cache:
   directories:
     - /usr/local/Cellar
 
@@ -41,7 +43,7 @@ matrix:
     - os: linux
       compiler: gcc
       env:
-        - TYPE=DebPackages MYSQL_TEST_SUITES=none
+        - TYPE=DebPackages MYSQL_TEST_SUITES=none CACHE_NAME=deb
       addons:
         apt:
           packages: # make sure these match debian/control contents

@@ -101,6 +101,7 @@ override_dh_auto_build:
 	@echo "RULES.$@"
 	# Print build env info to help debug builds on different platforms
 	dpkg-architecture
+	echo $(MAKEFLAGS)
 	cd $(BUILDDIR) && $(MAKE)
 	touch $@
 
