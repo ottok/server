@@ -26,7 +26,7 @@ then
   sed 's|DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test|DINSTALL_MYSQLTESTDIR=false|' -i debian/rules
 
   # Also skip building RocksDB and TokuDB to save even more time and disk space
-  sed 's|-DDEB|-DWITHOUT_TOKUDB_STORAGE_ENGINE=true -DWITHOUT_ROCKSDB_STORAGE_ENGINE=true -DDEB|' -i debian/rules
+  sed 's|-DDEB|-DWITHOUT_TOKUDB_STORAGE_ENGINE=true -DWITHOUT_MROONGA_STORAGE_ENGINE=true -DWITHOUT_ROCKSDB_STORAGE_ENGINE=true -DDEB|' -i debian/rules
 fi
 
 

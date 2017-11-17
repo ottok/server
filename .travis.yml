@@ -17,8 +17,10 @@ compiler:
   - clang
 
 cache:
-  - apt
-  - ccache # Does not currently work for clang builds: https://github.com/travis-ci/travis-ci/issues/6201
+  apt: true
+  ccache: true # Does not currently work for clang builds: https://github.com/travis-ci/travis-ci/issues/6201
+  directories:
+    - /usr/local/Cellar # Fails do to permission error: https://github.com/travis-ci/travis-ci/issues/8092
 
 env:
   matrix:
@@ -31,9 +33,6 @@ matrix:
   exclude:
     - os: osx
       compiler: gcc
-      cache:
-        directories:
-          - /usr/local/Cellar # Fails do to permission error, should be under /home/travis/Cellar? or MacOS only?
   include:
     - os: linux
       compiler: gcc
@@ -105,7 +104,7 @@ addons:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-4.0
       - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
-    packages: # make sure these match the build requirements
+    packages: # make sure these include all compilers and all build dependencies (see list above)
       - gcc-5
       - g++-5
       - gcc-6
