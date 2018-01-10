@@ -2,9 +2,6 @@ Source: mariadb-10.3
 Section: database
 Priority: optional
 Maintainer: MariaDB Developers <maria-developers@lists.launchpad.net>
-Build-Depends: bison,
-               chrpath,
-               cmake (>= 2.7),
                debhelper (>= 9),
                dh-apparmor,
                dh-systemd,
@@ -38,8 +35,6 @@ Homepage: http://mariadb.org/
 Vcs-Git: https://github.com/MariaDB/server.git
 Vcs-Browser: https://github.com/MariaDB/server/
 
-Package: libmariadb3
-Architecture: any
 Section: libs
 Depends: mariadb-common, ${misc:Depends}, ${shlibs:Depends}
 Conflicts: mariadb-galera-server-10.0 (<< 10.0.5),
