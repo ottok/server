@@ -177,7 +177,9 @@ override_dh_installcron-arch:
 get-orig-source:
 	uscan --force-download --verbose
 
+# If a file is not supposed to be included anywhere, add it to the not-installed
+# file and document the reason.
 %:
-	dh $@ --parallel --with dpatch --with systemd
+	dh $@ --parallel --with dpatch --with systemd --fail-missing
 
 # vim: ts=8
