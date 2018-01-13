@@ -180,6 +180,6 @@ get-orig-source:
 # If a file is not supposed to be included anywhere, add it to the not-installed
 # file and document the reason.
 %:
-	dh $@ --parallel --with dpatch --with systemd --fail-missing
+	dh $@ --parallel --with dpatch --with systemd --list-missing
 
 # vim: ts=8
