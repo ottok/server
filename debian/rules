@@ -97,8 +97,10 @@ endif
 	    -DSYSTEM_TYPE="debian-$(DEB_BUILD_GNU_SYSTEM)" \
 	    -DCMAKE_SYSTEM_PROCESSOR=$(DEB_BUILD_ARCH) \
 	    -DBUILD_CONFIG=mysql_release \
+	    -DINSTALL_LAYOUT:STRING=DEB \
+	    -DWITH_MYSQLCOMPAT=ON \
 	    -DINSTALL_LIBDIR=lib/$(DEB_HOST_MULTIARCH) \
-	    -DINSTALL_PLUGINDIR=lib/mysql/plugin \
+	    -DINSTALL_PLUGINDIR=lib/$(DEB_HOST_MULTIARCH)/mariadb18/plugin \
 	    -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test \
 	    -DDEB=$(DISTRIBUTION) ..'
 
@@ -174,7 +176,6 @@ override_dh_auto_install:
 	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.18
 	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.19
 	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.20
-
 
 override_dh_installlogrotate-arch:
 	dh_installlogrotate --name mysql-server
