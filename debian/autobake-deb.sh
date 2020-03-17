@@ -59,6 +59,12 @@ then
   echo "usr/bin/sst_dump" >> debian/mariadb-plugin-rocksdb.install
 fi
 
+# From Debian Buster/Ubuntu Bionic, libcurl4 replaces libcurl3.
+if apt-cache madison libcurl4 | grep 'libcurl4' >/dev/null 2>&1
+then
+  sed 's/libcurl3/libcurl4/g' -i debian/control
+fi
+
 # Don't build rocksdb package if gcc version is less than 4.8 or we are running on
 # x86 32 bit.
 if [[ $GCCVERSION -lt 40800 ]] || [[ $(arch) =~ i[346]86 ]] || [[ $TRAVIS ]]
