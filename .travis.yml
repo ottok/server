@@ -26,14 +26,16 @@ addons:
       # https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test/+packages?field.name_filter=&field.status_filter=published&field.series_filter=xenial
       - llvm-toolchain-xenial-6.0
       - llvm-toolchain-xenial-7 # NOTE: This repo has no clang-7 for s390x
+      - llvm-toolchain-xenial-8
       - sourceline: 'ppa:maria-captains/travis-ci-helper-repo'
       # https://launchpad.net/~maria-captains/+archive/ubuntu/travis-ci-helper-repo/+packages
     packages: &common-packages
       # make sure these include all compilers and all build dependencies (see list above)
       - bison
       - chrpath
+      - clang-5.0 # xenial, bionic
       - clang-6.0 # xenial, bionic
-      - clang-7 # bionic-updates, llvm-toolchain-xenial-6.0 (amd64 only, not s390x)
+      - clang-7 # bionic-updates, llvm-toolchain-xenial-6.0 (amd64 only, not s390x nor ppc64le)
       - clang-8 # xenial, bionic
       - cmake
       - cracklib-runtime
@@ -66,12 +68,37 @@ addons:
       - psmisc
       - uuid-dev
       - zlib1g-dev
+  homebrew:
+    # OSX builds failing on "Could NOT find OpenSSL, try to set the path to
+    # OpenSSL root folder in the system variable OPENSSL_ROOT_DIR (missing:
+    # OPENSSL_INCLUDE_DIR)"
+    packages:
+      - bison
+      - cmake
+      - cracklib
+      - boost
+      - curl
+      - jemalloc
+      - ncurses
+      - pcre2
+      - pkg-config
+      - groonga
+      - readline
+      - snappy
+      - openssl@1.1
+      - libxml2
+      - perl
+      - zlib
 
 # libsystemd-daemon-dev # https://github.com/travis-ci/apt-package-whitelist/issues/3882
 
 # The jobs matrix consists of all the combinations of 'arch', 'os', 'compiler' and 'env'
 arch:
   - amd64
+  - s390x
+  - ppc64le
+  - arm64 # E: Encountered a section with no Package: header
+  # E: Problem with MergeList /var/lib/apt/lists/repo.mongodb.org_apt_ubuntu_dists_xenial_mongodb-org_4.0_multiverse_binary-amd64_Packages
 os:
   - linux
   - osx
@@ -86,6 +113,8 @@ env:
   - CC_VERSION=7 TYPE=RelWithDebInfo MYSQL_TEST_SUITES=rocksdb,versioning
   - CC_VERSION=7 TYPE=RelWithDebInfo MYSQL_TEST_SUITES=csv,federated,funcs_1,funcs_2,gcol,handler,heap,json,maria,perfschema,plugins,multi_source,roles
   - CC_VERSION=8 TYPE=RelWithDebInfo MYSQL_TEST_SUITES=main
+  - CC_VERSION=5 TYPE=RelWithDebInfo MYSQL_TEST_SUITES=main # OK for amd64 and gcc, but clang-5 needed .0 addition
+  - CC_VERSION=9 TYPE=RelWithDebInfo MYSQL_TEST_SUITES=main # OK for amd64 and gcc, but clang-9 is missing so can't run at all on clang
 
 jobs:
   # Define what of the above defined jobs matrix is excluded

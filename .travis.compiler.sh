@@ -24,7 +24,7 @@ if [[ "${TRAVIS_OS_NAME}" == 'linux' ]]; then
     CMAKE_OPT="${CMAKE_OPT} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   fi
   if [[ "${CXX}" == 'clang++' ]]; then
-    if [[ "${CC_VERSION}" == '6' ]]; then
+    if [[ "${CC_VERSION}" == '6' ]] || [[ "${CC_VERSION}" == '5' ]]; then
       export CXX=${CXX}-${CC_VERSION}.0
     else
       export CXX=${CXX}-${CC_VERSION}
@@ -46,7 +46,6 @@ fi
 if [[ "${TRAVIS_OS_NAME}" == 'osx' ]]; then
   TEST_CASE_TIMEOUT=20
   exclude_modules;
-  CMAKE_OPT="${CMAKE_OPT} -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl"
   if which ccache ; then
     CMAKE_OPT="${CMAKE_OPT} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
   fi
