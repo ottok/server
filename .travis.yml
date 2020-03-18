@@ -1,7 +1,7 @@
 # vim ft=yaml
 # travis-ci.org definition
 
-dist: xenial
+dist: bionic
 
 git:
   depth: 2
@@ -37,6 +37,7 @@ addons:
       - clang-6.0 # xenial, bionic
       - clang-7 # bionic-updates, llvm-toolchain-xenial-6.0 (amd64 only, not s390x)
       - clang-8 # xenial, bionic
+      - clang-9 # bionic
       - cmake
       - cracklib-runtime
       - galera-4
@@ -125,6 +126,7 @@ jobs:
   # Define extra jobs that are run in addition to the main jobs matrix
   include:
     - os: linux
+      dist: xenial
       compiler: gcc
       env: DebPackages=xenial
       addons: &deb-addons
@@ -148,8 +150,20 @@ jobs:
         - ${CC} --version ; ${CXX} --version
         - env DEB_BUILD_OPTIONS="parallel=4" debian/autobake-deb.sh;
     - os: linux
+      dist: xenial
+      arch: amd64
+      compiler: gcc
+      env: DebPackages=bionic
+      addons: *deb-addons
+      script: *deb-script
+    - os: linux
       arch: s390x
-      dist: bionic
+      compiler: gcc
+      env: DebPackages=xenial
+      addons: *deb-addons
+      script: *deb-script
+    - os: linux
+      arch: s390x
       compiler: gcc
       env: DebPackages=bionic
       addons: *deb-addons
