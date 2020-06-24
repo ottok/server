@@ -39,6 +39,23 @@ else
     TESTSUITE_FAIL_CMD:=exit 1
 endif
 
+# Speed optimizations
+CMAKEFLAGS += -DCMAKE_C_FLAGS=-gsplit-dwarf -DCMAKE_CXX_FLAGS=-gsplit-dwarf 
+CMAKEFLAGS += -DCMAKE_EXE_LINKER_FLAGS=ld.bfd -DCMAKE_MODULE_LINKER_FLAGS=ld.bfd -DCMAKE_SHARED_LINKER_FLAGS=ld.bfd
+# The latter fails with
+#   cd /tmp/build/source/builddir/sql && /usr/bin/cmake -E cmake_link_script CMakeFiles/gen_lex_token.dir/link.txt --verbose=1
+#   /usr/lib/ccache/x86_64-linux-gnu-g++  -gsplit-dwarf -pie -fPIC -Wl,-z,relro,-z,now -fstack-protector --param=ssp-buffer-size=4 -O3 -g 
+#   -static-libgcc -fno-omit-frame-pointer -fno-strict-aliasing -Wno-uninitialized -fno-omit-frame-pointer -D_FORTIFY_SOURCE=2 -DDBUG_OFF 
+#   -Wall -Wextra -Wno-format-truncation -Wno-init-self -Wno-nonnull-compare -Wno-unused-parameter -Woverloaded-virtual 
+#   -Wnon-virtual-dtor -Wvla -Wwrite-strings  ld.bfd CMakeFiles/gen_lex_token.dir/gen_lex_token.cc.o  -o gen_lex_token  -lpthread 
+#   x86_64-linux-gnu-g++: error: ld.bfd: No such file or directory
+#
+# despite having these installed:
+# binutils: /usr/bin/ld.bfd
+# binutils-x86-64-linux-gnu: /usr/bin/x86_64-linux-gnu-ld.bfd
+
+
+
 # Add extra flag to avoid WolfSSL code crashing the entire mariadbd on s390x. This
 # can be removed once upstream has made the code s390x compatible, see
 # https://jira.mariadb.org/browse/MDEV-21705 and
