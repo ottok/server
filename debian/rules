@@ -36,32 +36,6 @@ else
     NUMJOBS = 1
 endif
 
-# Ignore test suite exit code on unstable platforms
-ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),mips mipsel mips64el alpha powerpc sh4 hurd-i386 sparc64 kfreebsd-i386 kfreebsd-amd64))
-    TESTSUITE_FAIL_CMD:=true
-else
-    TESTSUITE_FAIL_CMD:=exit 1
-endif
-
-# RocksDB cannot build on 32-bit platforms
-ifeq (32,$(DEB_HOST_ARCH_BITS))
-    CMAKEFLAGS += -DPLUGIN_ROCKSDB=NO
-endif
-
-# ColumnStore only attempts to build on a few platforms as dictated by CMake checks
-# Also note in debian/control the CS-only build deps marked '[amd64]'
-ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),amd64))
-    CMAKEFLAGS += -DPLUGIN_COLUMNSTORE=YES
-endif
-
-# Add extra flag to avoid WolfSSL code crashing the entire mariadbd on s390x. This
-# can be removed once upstream has made the code s390x compatible, see
-# https://jira.mariadb.org/browse/MDEV-21705 and
-# https://github.com/wolfSSL/wolfssl/issues/2828
-ifeq ($(DEB_HOST_ARCH),s390x)
-    CFLAGS += -DWC_NO_CACHE_RESISTANT
-endif
-
 # Add support for verbose builds
 MAKEFLAGS += VERBOSE=1
 
@@ -70,11 +44,6 @@ override_dh_auto_clean:
 	dh_testdir
 	dh_testroot
 	rm -rf $(BUILDDIR) builddir-native
-
-	[ ! -f debian/mysql-test-unstable-tests.orig ] || \
-	    mv debian/mysql-test-unstable-tests.orig mysql-test/unstable-tests
-
-	debconf-updatepo # Update po-files when clean runs before each build
 
 override_dh_auto_configure:
 	@echo "RULES.$@"
@@ -97,6 +66,17 @@ endif
 	    -DCMAKE_SYSTEM_PROCESSOR=$(DEB_HOST_ARCH) \
 	    -DBUILD_CONFIG=mysql_release \
 	    -DPLUGIN_AWS_KEY_MANAGEMENT=NO \
+			-DPLUGIN_CONNECT=NO \
+			-DPLUGIN_MROONGA=NO \
+			-DPLUGIN_OQGRAPH=NO \
+			-DPLUGIN_PERFSCHEMA=NO \
+			-DPLUGIN_ROCKSDB=NO \
+			-DPLUGIN_SPHINX=NO \
+			-DPLUGIN_SPIDER=NO \
+			-DPLUGIN_TOKUDB=NO \
+			-DPLUGIN_XPAND=NO \
+			-DWITH_EMBEDDED_SERVER=OFF \
+			-DWITH_WSREP=OFF \
 	    -DDEB=$(DEB_VENDOR) ..'
 
 # This is needed, otherwise 'make test' will run before binaries have been built
@@ -109,9 +89,6 @@ override_dh_auto_build:
 override_dh_auto_test:
 	@echo "RULES.$@"
 	dh_testdir
-	# Skip unstable tests if such are defined for arch
-	cp mysql-test/unstable-tests debian/mysql-test-unstable-tests.orig
-	[ ! -f debian/unstable-tests.$(DEB_HOST_ARCH) ] || cat debian/unstable-tests.$(DEB_HOST_ARCH) >> mysql-test/unstable-tests
 	# Run testsuite
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	cd $(BUILDDIR)/mysql-test && ./mtr --force --mem --parallel=$(NUMJOBS) --skip-rpl --suite=main --skip-test-list=unstable-tests  || $(TESTSUITE_FAIL_CMD) ;
@@ -122,72 +99,12 @@ override_dh_auto_install:
 	dh_testdir
 	dh_testroot
 
-ifneq (,$(filter linux,$(DEB_HOST_ARCH_OS)))
-	# Copy systemd files to a location available for dh_installinit
-	cp $(BUILDDIR)/support-files/mariadb.service debian/mariadb-server-10.6.mariadb.service
-	cp $(BUILDDIR)/support-files/mariadb@.service debian/mariadb-server-10.6.mariadb@.service
-endif
-
 	# Run 'make install' without output since it is uninteresting and
 	# silencing it helps to make overall build log shorter and more readable
 	@echo "Running $(MAKE) install DESTDIR=$(TMP) ..."
 	cd $(BUILDDIR) && $(MAKE) install DESTDIR=$(TMP) > /dev/null
 
-	# If mariadb-test package is removed, also remove most of it's files
-	grep --quiet "Package: mariadb-test" debian/control || rm -rf $(TMP)/usr/share/mysql/mysql-test
-
-	# Delete private files from libraries so they don't get shipped in the -dev pacakges
-	rm -r $(TMP)/usr/include/mariadb/server/private
-
-	# Don't ship sql-bench at all, just delete it completely even though it builds
-	rm -r $(TMP)/usr/sql-bench
-
-	# nm numeric soft is not enough, therefore extra sort in command
-	# to satisfy Debian reproducible build requirements
-	nm --defined-only $(BUILDDIR)/sql/mariadbd | LC_ALL=C sort | gzip -n -9 > $(TMP)/usr/share/doc/mariadb-server-10.6/mariadbd.sym.gz
-
-	# rename and install AppArmor profile
-	install -D -m 644 debian/apparmor-profile $(TMP)/etc/apparmor.d/usr.sbin.mariadbd
-
-	# Install libmariadbclient18 compatibility links
-	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadbclient.so
-	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadbclient.so.18
-
-	# Install libmysqlclientclientXX compatibility links
-	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.18
-	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.19
-	ln -s libmariadb.so.3 $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmysqlclient.so.20
-
-	# Install libmariadbclient.a compatibility link
-	ln -s libmariadb.a $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadbclient.a
-
-	# Symlink plugins that are used by both server and client and thus need to
-	# load from the libmariadb path as well
-	ln -s ../../../mysql/plugin/auth_test_plugin.so $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadb3/plugin/auth_test_plugin.so
-	ln -s ../../../mysql/plugin/qa_auth_interface.so $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadb3/plugin/qa_auth_interface.so
-	ln -s ../../../mysql/plugin/test_sql_service.so $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadb3/plugin/test_sql_service.so
-	# Move test plugins that are only needed by the client to the libmariadb path
-	mv -v $(TMP)/usr/lib/mysql/plugin/qa_auth_client.so $(TMP)/usr/lib/$(DEB_HOST_MULTIARCH)/libmariadb3/plugin/
-
-override_dh_installlogrotate-arch:
-	dh_installlogrotate --name mysql-server
-
-override_dh_systemd_enable:
-	dh_systemd_enable --name=mariadb
-	dh_systemd_enable --no-enable --name=mariadb@
-
-# Start mysql at sequence number 19 before 20 where apache, proftpd etc gets
-# started which might depend on a running database server.
-override_dh_installinit-arch:
-	dh_installinit --name=mariadb --no-start -- defaults 19 21
-	dh_systemd_start --restart-after-upgrade
-
-
-# If a file is not supposed to be included anywhere, add it to the not-installed
-# file and document the reason. Note that dh_install supports the above mentioned
-# white list file only starting from Debian Stretch and Ubuntu Xenial.
-# To find more, grep build logs for 'but is not installed to anywhere'.
 %:
-	dh $@ --parallel --with systemd --list-missing
+	dh $@ --parallel --list-missing
 
 # vim: ts=8
