@@ -1,4 +1,4 @@
-mariadb-columnstore (1:10.6.0) unstable; urgency=medium
+mariadb-plugin-columnstore (1:10.6.0.6.1.1) unstable; urgency=medium
 
   * Initial Release
 

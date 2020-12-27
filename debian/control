@@ -1,4 +1,4 @@
-Source: mariadb-columnstore
+Source: mariadb-plugin-columnstore
 Section: database
 Priority: optional
 Maintainer: MariaDB Developers <maria-developers@lists.launchpad.net>
@@ -56,7 +56,7 @@ Architecture: amd64
 Depends: binutils,
          libjemalloc1 | libjemalloc2,
          libsnappy1 | libsnappy1v5,
-         mariadb-server-10.6 (= ${binary:Version}),
+         mariadb-server-10.6 | mariadb-server-10.5,
          net-tools,
          python3,
          ${misc:Depends},

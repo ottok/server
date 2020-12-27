@@ -28,7 +28,8 @@ echo "Incrementing changelog and starting build scripts"
 
 # Find major.minor version
 source ./VERSION
-UPSTREAM="${MYSQL_VERSION_MAJOR}.${MYSQL_VERSION_MINOR}.${MYSQL_VERSION_PATCH}${MYSQL_VERSION_EXTRA}"
+# @TODO Read version from ColumnStore/VERSION
+UPSTREAM="${MYSQL_VERSION_MAJOR}.${MYSQL_VERSION_MINOR}.${MYSQL_VERSION_PATCH}.6.1.1${MYSQL_VERSION_EXTRA}"
 PATCHLEVEL="+maria"
 LOGSTRING="MariaDB build"
 CODENAME="$(lsb_release -sc)"
