@@ -34,6 +34,10 @@ stop_server() {
     # Compatibility with versions that ran 'mysqld'
     if ! pgrep -x --ns $$ mysqld > /dev/null; then return; fi
 
+    # Always ensure safe shutdown before upgrades, but skip errors as unimportant
+    echo "MariaDB performing safe shutdown – please wait patiently"
+    mariadb -e 'SET GLOBAL innodb_fast_shutdown=0;' --protocol=SOCKET --user=root || true
+
     set +e
     invoke-rc.d mariadb stop
     invoke-rc.d mysql stop # Backwards compatibility

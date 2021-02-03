@@ -20,6 +20,10 @@ set -o pipefail
 
 case "$1" in
   configure)
+    # Always ensure safe shutdown before upgrades, but skip errors as unimportant
+    echo "MariaDB performing safe shutdown – please wait patiently"
+    mariadb -e 'SET GLOBAL innodb_fast_shutdown=0;' --protocol=SOCKET --user=root || true
+
     # This is needed because mysql_install_db removes the pid file in /run
     # and because changed configuration options should take effect immediately.
     # In case the server wasn't running at all it should be ok if the stop
@@ -241,6 +245,10 @@ EOF
     if [ -x "$(command -v systemctl)" ]; then
       systemctl daemon-reload
     else
+      # Always ensure safe shutdown before upgrades, but skip errors as unimportant
+      echo "MariaDB performing safe shutdown – please wait patiently"
+      mariadb -e 'SET GLOBAL innodb_fast_shutdown=0;' --protocol=SOCKET --user=root || true
+
       invoke-rc.d mariadb restart
     fi
   ;;

@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Always ensure safe shutdown before upgrades, but skip errors as unimportant
+echo "MariaDB performing safe shutdown – please wait patiently"
+mariadb -e 'SET GLOBAL innodb_fast_shutdown=0;' --protocol=SOCKET --user=root || true
+
 #DEBHELPER#
 
 # Modified dh_systemd_start snippet that's not added automatically
