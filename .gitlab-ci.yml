@@ -97,6 +97,11 @@ fedora:
     # every job to upload a new cache every time. A monthly or weekly scheduled
     # run could update the cache for all other builds to us.
 
+fedora arm64:
+  extends: fedora
+  tags: 
+    - arm64
+
 centos8:
   stage: build
   image: centos:8
