@@ -293,10 +293,59 @@ build_deb:
   trigger:
     include: debian/salsa-ci.yml
 
-deploy_testing:
-  stage: deploy
+debian-make:
+  stage: build
+  image: debian:sid-slim
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: recursive
   script:
-    - echo "Deploy to testing server"
-  environment:
-    name: testing
-    url: https://testing.kekalainen.net
+    - apt-get update && apt-get install make
+    - make debian-build | tee build.log
+  artifacts:
+    when: always  # Must be able to see logs
+    paths:
+      - build.log
+      - dependencies.dot
+  cache:
+    key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
+    paths:
+      - .ccache
+
+debian-ninja:
+  stage: build
+  image: debian:sid-slim
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - apt-get update && apt-get install make
+    - make ninja-build | tee build.log
+  artifacts:
+    when: always  # Must be able to see logs
+    paths:
+      - build.log
+      - dependencies.dot
+  cache:
+    key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
+    paths:
+      - .ccache
+
+debian-clang:
+  stage: build
+  image: debian:sid-slim
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - apt-get update && apt-get install make
+    - make clang-build | tee build.log
+  artifacts:
+    when: always  # Must be able to see logs
+    paths:
+      - build.log
+      - dependencies.dot
+  cache:
+    key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
+    paths:
+      - .ccache
