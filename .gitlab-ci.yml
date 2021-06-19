@@ -25,6 +25,7 @@
 
 stages:
   - build
+  - deploy
   - test
   - Salsa-CI
 
@@ -63,7 +64,6 @@ fedora:
     GIT_STRATEGY: fetch
     GIT_SUBMODULE_STRATEGY: normal
   script:
-    - uname -a; nproc;   head -n 1 /proc/meminfo; df -h
     - yum install -y yum-utils rpm-build ccache openssl-devel
     - source /etc/profile.d/ccache.sh
     - export CCACHE_DIR="$(pwd)/.ccache"; ccache -s
@@ -73,14 +73,14 @@ fedora:
     - yum-builddep -y mariadb-server
     - mkdir builddir; cd builddir
     - cmake --parallel -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
-    - eatmydata make package 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - eatmydata make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
     # @TODO: Don't use -j on Gitlab.com as builds just get stuck when running
     # multi-proc, needs more debugging
     - make test || true  # Unit tests constantly fail, see https://jira.mariadb.org/browse/MDEV-25820
     # - make test-force || true  # mysql-test-runner takes too long, run it in a separate job instead
     - *rpm_listfiles
     - mkdir ../rpm; mv *.rpm ../rpm
-    - ccache -s
+    - ccache -s; ccache -z
   artifacts:
     when: always  # Must be able to see logs
     paths:
@@ -99,7 +99,21 @@ fedora:
 
 fedora arm64:
   extends: fedora
-  tags: 
+  script:
+    - yum install -y yum-utils rpm-build ccache openssl-devel
+    - source /etc/profile.d/ccache.sh
+    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -s
+    # This repository does not have any .spec files, so install dependencies based on Fedora spec file
+    - yum-builddep -y mariadb-server
+    - mkdir builddir; cd builddir
+    - cmake --parallel -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - make test || true  # Unit tests constantly fail, see https://jira.mariadb.org/browse/MDEV-25820
+    # - make test-force || true  # mysql-test-runner takes too long, run it in a separate job instead
+    - *rpm_listfiles
+    - mkdir ../rpm; mv *.rpm ../rpm
+    - ccache -s; ccache -z
+  tags:
     - arm64
 
 centos8:
@@ -128,14 +142,14 @@ centos8:
     - yum-builddep -y mariadb-server
     - mkdir builddir; cd builddir
     - cmake --parallel -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
-    - eatmydata make package 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - eatmydata make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
     # @TODO: Don't use -j on Gitlab.com as builds just get stuck when running
     # multi-proc, needs more debugging
     - make test || true  # Unit tests constantly fail, see https://jira.mariadb.org/browse/MDEV-25820
     # - make test-force || true  # mysql-test-runner takes too long, run it in a separate job instead
     - *rpm_listfiles
     - mkdir ../rpm; mv *.rpm ../rpm
-    - ccache -s
+    - ccache -s; ccache -z
   artifacts:
     when: always  # Must be able to see logs
     paths:
@@ -160,7 +174,7 @@ centos7:
     - yum-builddep -y mariadb-server
     - mkdir builddir; cd builddir
     - cmake --parallel -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
-    - make package 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log || free -m; make package 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
     # @TODO: Don't use -j on Gitlab.com as builds just get stuck when running
     # multi-proc, needs more debugging
     - make test || true  # Unit tests constantly fail, see https://jira.mariadb.org/browse/MDEV-25820
@@ -180,6 +194,7 @@ mysql-test-run:
   needs:
     - job: fedora
   script:
+    - ls -la rpm/
     # Install packages so tests and the dependencies install
     # @TODO: RPM missing 'patch' as dependency, so installing it manually for now
     - yum install -y rpm/*.rpm patch
@@ -197,12 +212,15 @@ mysql-test-run:
       main.mysql_upgrade_noengine : requires diff but diffutils is not a dependency
       " > skiplist
     # @TODO: Flaky tests are skipped for now, but should be fixed
-    - ./mtr --suite=main --force --xml-report=$CI_PROJECT_DIR/junit.xml --skip-test-list=skiplist
+    - ./mtr --parallel=auto --suite=main --force --xml-report=$CI_PROJECT_DIR/junit.xml --skip-test-list=skiplist
   artifacts:
     when: always  # Also show results when tests fail
     reports:
       junit:
         - junit.xml
+
+# mysql-test-run debian:
+# apt update && apt install -y mariadb-test patch eatmydata && cd /usr/share/mysql/mysql-test && eatmydata ./mtr --suites=main,binlog,compat/oracle,encryption,funcs_1,funcs_2,handler,heap,innodb,innodb_fts,innodb_gis,innodb_zip,json,maria,multi_source,perfschema,plugins,roles,rpl,sys_vars,unit --force --report-times --fast --parallel=auto  --mem
 
 rpmlint:
   stage: test
@@ -274,3 +292,11 @@ build_deb:
   stage: Salsa-CI
   trigger:
     include: debian/salsa-ci.yml
+
+deploy_testing:
+  stage: deploy
+  script:
+    - echo "Deploy to testing server"
+  environment:
+    name: testing
+    url: https://testing.kekalainen.net
