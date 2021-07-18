@@ -65,19 +65,20 @@ fedora:
     GIT_STRATEGY: fetch
     GIT_SUBMODULE_STRATEGY: normal
   script:
-    - yum install -y yum-utils rpm-build ccache openssl-devel
+    - yum install -y yum-utils rpm-build ccache openssl-devel graphviz
     - source /etc/profile.d/ccache.sh
-    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -s
+    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -z
     # Accelerate builds with unsafe disk access, as we can afford to loose the entire build anyway
     - yum install -y https://github.com/stewartsmith/libeatmydata/releases/download/v129/libeatmydata-129-1.fc33.x86_64.rpm
     # This repository does not have any .spec files, so install dependencies based on Fedora spec file
     - yum-builddep -y mariadb-server
     - mkdir builddir; cd builddir
     - cmake -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
-    - eatmydata make package 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - cmake --graphviz=../dependencies.dot .. && dot -Tpng -o ../dependencies.png ../dependencies.dot
+    - eatmydata make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
     # @TODO: Don't use -j on Gitlab.com as builds just get stuck when running
-    # multi-proc, needs more debugging
-    - make test || true  # Unit tests constantly fail, see https://jira.mariadb.org/browse/MDEV-25820
+    # multi-proc and out of memory, see https://jira.mariadb.org/browse/MDEV-25968
+    - make test
     # - make test-force || true  # mysql-test-runner takes too long, run it in a separate job instead
     - *rpm_listfiles
     - mkdir ../rpm; mv *.rpm ../rpm
@@ -89,6 +90,96 @@ fedora:
       - rpmlist-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
       - rpm
       - builddir/_CPack_Packages/Linux/RPM/SPECS/
+      - dependencies.dot
+      - dependencies.png
+  cache:
+    key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
+    paths:
+      - .ccache
+    # policy: pull
+    # @TODO: It would be enough to only download the cache. There is no need for
+    # every job to upload a new cache every time. A monthly or weekly scheduled
+    # run could update the cache for all other builds to us.
+
+fedora ninja:
+  stage: build
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: normal
+  script:
+    - yum install -y yum-utils rpm-build ccache openssl-devel graphviz ninja-build
+    - source /etc/profile.d/ccache.sh
+    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -z
+    # Accelerate builds with unsafe disk access, as we can afford to loose the entire build anyway
+    - yum install -y https://github.com/stewartsmith/libeatmydata/releases/download/v129/libeatmydata-129-1.fc33.x86_64.rpm
+    # This repository does not have any .spec files, so install dependencies based on Fedora spec file
+    - yum-builddep -y mariadb-server
+    - mkdir builddir; cd builddir
+    #- export CC=/usr/lib/ccache/cc CXX=/usr/lib/ccache/c++ # For Ninja to use ccache
+    - cmake -DRPM=$CI_JOB_NAME $CMAKE_FLAGS -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -G Ninja .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - ninja -t graph > ../dependencies.dot && dot -Tpng -o ../dependencies.png ../dependencies.dot
+    - eatmydata ninja package --verbose 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    # No -j needed, Ninja runs in parallel by default
+    - ninja test
+    - *rpm_listfiles
+    - mkdir ../rpm; mv *.rpm ../rpm
+    - ccache -s
+  artifacts:
+    when: always  # Must be able to see logs
+    paths:
+      - build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+      - rpmlist-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+      - rpm
+      - builddir/_CPack_Packages/Linux/RPM/SPECS/
+      - dependencies.dot
+      - dependencies.png
+  cache:
+    key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
+    paths:
+      - .ccache
+    # policy: pull
+    # @TODO: It would be enough to only download the cache. There is no need for
+    # every job to upload a new cache every time. A monthly or weekly scheduled
+    # run could update the cache for all other builds to us.
+
+fedora clang:
+  stage: build
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_SUBMODULE_STRATEGY: normal
+  script:
+    - yum install -y yum-utils rpm-build ccache openssl-devel graphviz clang
+    - source /etc/profile.d/ccache.sh
+    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -z
+    # Accelerate builds with unsafe disk access, as we can afford to loose the entire build anyway
+    - yum install -y https://github.com/stewartsmith/libeatmydata/releases/download/v129/libeatmydata-129-1.fc33.x86_64.rpm
+    # This repository does not have any .spec files, so install dependencies based on Fedora spec file
+    - yum-builddep -y mariadb-server
+    - mkdir builddir; cd builddir
+    - export CXX=${CXX:-clang++}
+    - export CC=${CC:-clang}
+    - export CXX_FOR_BUILD=${CXX_FOR_BUILD:-clang++}
+    - export CC_FOR_BUILD=${CC_FOR_BUILD:-clang}
+    - export CFLAGS='-Wno-unused-command-line-argument'
+    - export CXXFLAGS='-Wno-unused-command-line-argument'
+    - cmake -DRPM=$CI_JOB_NAME $CMAKE_FLAGS .. 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    - cmake --graphviz=../dependencies.dot .. && dot -Tpng -o ../dependencies.png ../dependencies.dot
+    - eatmydata make package -j 2>&1 | tee -a ../build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+    # No -j needed, Ninja runs in parallel by default
+    - make test
+    # - make test-force || true  # mysql-test-runner takes too long, run it in a separate job instead
+    - *rpm_listfiles
+    - mkdir ../rpm; mv *.rpm ../rpm
+    - ccache -s
+  artifacts:
+    when: always  # Must be able to see logs
+    paths:
+      - build-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+      - rpmlist-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
+      - rpm
+      - builddir/_CPack_Packages/Linux/RPM/SPECS/
+      - dependencies.dot
+      - dependencies.png
   cache:
     key: $MARIADB_MAJOR_VERSION-$CI_JOB_NAME
     paths:
@@ -119,7 +210,7 @@ centos8:
     - yum install -y https://github.com/stewartsmith/libeatmydata/releases/download/v129/libeatmydata-129-1.fc33.x86_64.rpm
     - yum install -y ccache  # From EPEL
     - source /etc/profile.d/ccache.sh
-    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -s
+    - export CCACHE_DIR="$(pwd)/.ccache"; ccache -z
     # This repository does not have any .spec files, so install dependencies based on CentOS spec file
     - yum-builddep -y mariadb-server
     - mkdir builddir; cd builddir
@@ -184,7 +275,7 @@ mysql-test-run:
     - rm -rf /usr/share/mariadb; ln -s /usr/share/mysql /usr/share/mariadb
     # mtr expects to be launched in-place and with write access to it's own directories
     - cd /usr/share/mysql-test
-    - ./mtr --suite=main --force --xml-report=$CI_PROJECT_DIR/junit.xml
+    - ./mtr --suite=main --force --parallel=auto --xml-report=$CI_PROJECT_DIR/junit.xml
   artifacts:
     when: always  # Also show results when tests fail
     reports:
@@ -198,6 +289,7 @@ rpmlint:
   script:
     - yum install -y rpmlint
     - rm -f rpm/*debuginfo*  # Not relevant in this test
+    - rm -f rpm/*.el7.* rpm/*.el8.*  Remove artifacts from undesired build
     # Limit output to 1000 lines as Gitlab-CI max output is 4194304 bytes
     # Save everything in a log file so it can be viewed in full via artifacts
     - rpmlint --info rpm/*.rpm | tee -a rpmlint-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
@@ -214,16 +306,33 @@ fedora install:
     - fedora
   script:
     - rm -f rpm/*debuginfo*  # Not relevant in this test
+    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
     # Nothing provides galera-4 on Fedora, so this step fails if built with wsrep
     - yum install -y rpm/*.rpm
+    # @TODO: Without this, server sets socket in datadir
+    - echo -e "[server]\nsocket=/tmp/mysql.sock" >> /etc/my.cnf
     # Fedora does not support running services in Docker (like Debian packages do) so start it manually
     - /usr/bin/mariadb-install-db -u mysql
     - sudo -u mysql /usr/sbin/mariadbd & sleep 10
+    # Dump database contents as is before upgrade
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > installed-database.sql
     # Since we did a manual start, we also need to run upgrade manually
-    - /usr/bin/mariadb-upgrade -u root --socket /var/lib/mysql/mysql.sock
+    - /usr/bin/mariadb-upgrade -u root
+    # Dump database contents as is after upgrade
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > upgraded-database.sql
     - |
       mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
       grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't install properly"
+    - mariadb -e "SHUTDOWN;"
+    - rm -rf /var/lib/mysql/*  # Clear datadir before next run
+    # Start database without install-db step
+    - sudo -u mysql /usr/sbin/mariadbd & sleep 10
+    # Dump database contents in initial state
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > empty-database.sql
+  artifacts:
+    paths:
+      - installed-database.sql
+      - upgraded-database.sql
 
 fedora upgrade:
   stage: test
@@ -235,24 +344,39 @@ fedora upgrade:
     - /usr/libexec/mysql-check-socket
     - /usr/libexec/mysql-prepare-db-dir
     - sudo -u mysql /usr/libexec/mysqld --basedir=/usr & sleep 10
+    # Dump database contents in installed state
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > old-installed-database.sql
     - /usr/libexec/mysql-check-upgrade
-    - mysql --skip-column-names -e "SELECT @@version, @@version_comment"  # Show version
+    # Dump database contents in upgraded state
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > old-upgraded-database.sql
+    - mariadb --skip-column-names -e "SELECT @@version, @@version_comment"  # Show version
     # @TODO: Upgrade from Fedora 33 MariaDB 10.4 to MariaDB.org latest does not work
     # so do this manual step to remove conflicts until packaging is fixed
-    - >
-      yum remove -y mariadb-server-utils mariadb-gssapi-server mariadb-cracklib-password-check
-      mariadb-backup mariadb-connector-c-config
+    - yum remove -y mariadb-server-utils mariadb-gssapi-server mariadb-cracklib-password-check mariadb-backup mariadb-connector-c-config
     - rm -f rpm/*debuginfo*  # Not relevant in this test
-    - yum install -y rpm/*.rpm procps  # procps provides pkill
+    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
+    - yum install -y rpm/*.rpm
     # nothing provides galera-4 on Fedora, so this step fails if built with wsrep
-    - pkill mysqld || true; sleep 5; pkill mysqld || true; sleep 5
-    - /usr/bin/mariadb-install-db -u mysql
+    - mysql -e "SHUTDOWN;"
+    # @TODO: Without this, server sets socket in datadir
+    - echo -e "[server]\nsocket=/tmp/mysql.sock" >> /etc/my.cnf
+    - /usr/bin/mariadb-install-db  # This step should not do anything on upgrades, just exit
     - sudo -u mysql /usr/sbin/mariadbd & sleep 10
+    # Dump database contents in installed state
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > new-installed-database.sql
     # @TODO: Since we did a manual start, we also need to run upgrade manually
-    - /usr/bin/mariadb-upgrade -u root --socket /var/lib/mysql/mysql.sock
+    - /usr/bin/mariadb-upgrade
+    # Dump database contents in upgraded state
+    - mariadb-dump -A --triggers --routines --events --skip-extended-insert > new-upgraded-database.sql
     - |
       mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
       grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't upgrade properly"
+  artifacts:
+    paths:
+      - old-installed-database.sql
+      - old-upgraded-database.sql
+      - new-installed-database.sql
+      - new-upgraded-database.sql
 
 mini benchmark:
   stage: test
@@ -260,6 +384,7 @@ mini benchmark:
     - fedora
   script:
     - rm -f rpm/*debuginfo*  # Not relevant in this test
+    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
     # Nothing provides galera-4 on Fedora, so this step fails if built with wsrep
     - yum install -y rpm/*.rpm
     # Don't use cracklib, otherwise the Sysbench user password will be rejected
@@ -281,7 +406,12 @@ mini benchmark:
     - sysbench oltp_read_write run --threads=4 --tables=20 --table-size=100000 --events=0 --range_selects=off | tee sysbench-run.txt
     - grep -oE '[a-z]+:[ ]+[0-9.]+' sysbench-run.txt > metrics.txt
     - echo 'Sysbench latency sum in milliseconds:' "$(tail -n 1 metrics.txt | grep -oE "[0-9]+" | head -n 1)"
-    - if [ "$(tail -n 1 metrics.txt | grep -oE "[0-9]+" | head -n 1)" -gt 41000 ]; then echo "Benchmark too slow, performance most likely regressed!"; exit 1; fi
+    - |
+      if [ "$(tail -n 1 metrics.txt | grep -oE "[0-9]+" | head -n 1)" -gt 41000 ]
+      then
+        echo "Benchmark too slow, performance most likely regressed!"
+        exit 1
+      fi
   artifacts:
     when: always
     paths:
