@@ -184,14 +184,7 @@ mysql-test-run:
     - rm -rf /usr/share/mariadb; ln -s /usr/share/mysql /usr/share/mariadb
     # mtr expects to be launched in-place and with write access to it's own directories
     - cd /usr/share/mysql-test
-    - |
-      echo "
-      main.mysqldump : flaky on Gitlab-CI
-      main.flush_logs_not_windows : flaky in containers in general
-      main.mysql_upgrade_noengine : requires diff but diffutils is not a dependency
-      " > skiplist
-    # @TODO: Flaky tests are skipped for now, but should be fixed
-    - ./mtr --suite=main --force --xml-report=$CI_PROJECT_DIR/junit.xml --skip-test-list=skiplist
+    - ./mtr --suite=main --force --xml-report=$CI_PROJECT_DIR/junit.xml
   artifacts:
     when: always  # Also show results when tests fail
     reports:
@@ -226,11 +219,11 @@ fedora install:
     # Fedora does not support running services in Docker (like Debian packages do) so start it manually
     - /usr/bin/mariadb-install-db -u mysql
     - sudo -u mysql /usr/sbin/mariadbd & sleep 10
-    # @TODO: Since we did a manual start, we also need to run upgrade manually
+    # Since we did a manual start, we also need to run upgrade manually
     - /usr/bin/mariadb-upgrade -u root --socket /var/lib/mysql/mysql.sock
     - |
-      mysql --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
-      grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't upgrade properly"
+      mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
+      grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't install properly"
 
 fedora upgrade:
   stage: test
@@ -258,8 +251,45 @@ fedora upgrade:
     # @TODO: Since we did a manual start, we also need to run upgrade manually
     - /usr/bin/mariadb-upgrade -u root --socket /var/lib/mysql/mysql.sock
     - |
-      mysql --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
+      mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
       grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't upgrade properly"
+
+mini benchmark:
+  stage: test
+  dependencies:
+    - fedora
+  script:
+    - rm -f rpm/*debuginfo*  # Not relevant in this test
+    # Nothing provides galera-4 on Fedora, so this step fails if built with wsrep
+    - yum install -y rpm/*.rpm
+    # Don't use cracklib, otherwise the Sysbench user password will be rejected
+    - rm -f rpm/*clacklib*.rpm
+    # Fedora does not support running services in Docker (like Debian packages do) so start it manually
+    - /usr/bin/mariadb-install-db -u mysql
+    - sudo -u mysql /usr/sbin/mariadbd & sleep 10
+    # Server defaults to socket in datadir, and since Sysbench does not obey my.cnf configs,
+    # make default socket address /tmp/mysql.sock work by symlinking it
+    - ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock
+    # Since we did a manual start, we also need to run upgrade manually
+    - /usr/bin/mariadb-upgrade -u root --socket
+    - |
+      mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
+      grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't install properly"
+    - yum install -y sysbench
+    - mariadb -e "CREATE DATABASE sbtest; CREATE USER sbtest@localhost; GRANT ALL PRIVILEGES ON sbtest.* TO sbtest@localhost"
+    - sysbench oltp_read_write prepare --threads=4 --tables=20 --table-size=100000 | tee sysbench-prepare.txt
+    - sysbench oltp_read_write run --threads=4 --tables=20 --table-size=100000 --events=0 --range_selects=off | tee sysbench-run.txt
+    - grep -oE '[a-z]+:[ ]+[0-9.]+' sysbench-run.txt > metrics.txt
+    - echo 'Sysbench latency sum in milliseconds:' "$(tail -n 1 metrics.txt | grep -oE "[0-9]+" | head -n 1)"
+    - if [ "$(tail -n 1 metrics.txt | grep -oE "[0-9]+" | head -n 1)" -gt 41000 ]; then echo "Benchmark too slow, performance most likely regressed!"; exit 1; fi
+  artifacts:
+    when: always
+    paths:
+      - sysbench-prepare.txt
+      - sysbench-run.txt
+    reports:
+      metrics:
+        - metrics.txt
 
 # Once all RPM builds and tests have passed, also run the DEB builds and tests
 # @NOTE: This is likely to work well only on salsa.debian.org as the Gitlab.com
