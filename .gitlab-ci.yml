@@ -265,7 +265,7 @@ centos7:
 
 mysql-test-run:
   stage: test
-  dependencies:
+  needs:
     - fedora
   script:
     # Install packages so tests and the dependencies install
@@ -284,12 +284,11 @@ mysql-test-run:
 
 rpmlint:
   stage: test
-  dependencies:
+  needs:
     - fedora
   script:
     - yum install -y rpmlint
     - rm -f rpm/*debuginfo*  # Not relevant in this test
-    - rm -f rpm/*.el7.* rpm/*.el8.*  Remove artifacts from undesired build
     # Limit output to 1000 lines as Gitlab-CI max output is 4194304 bytes
     # Save everything in a log file so it can be viewed in full via artifacts
     - rpmlint --info rpm/*.rpm | tee -a rpmlint-$CI_JOB_NAME-$CI_COMMIT_REF_SLUG.log
@@ -302,11 +301,10 @@ rpmlint:
 
 fedora install:
   stage: test
-  dependencies:
+  needs:
     - fedora
   script:
     - rm -f rpm/*debuginfo*  # Not relevant in this test
-    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
     # Nothing provides galera-4 on Fedora, so this step fails if built with wsrep
     - yum install -y rpm/*.rpm
     # @TODO: Without this, server sets socket in datadir
@@ -323,6 +321,8 @@ fedora install:
     - |
       mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
       grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't install properly"
+    - mariadb --table -e "SELECT * FROM mysql.global_priv; SHOW CREATE user root@localhost; SHOW CREATE user 'mariadb.sys'@localhost"
+    - mariadb --table -e "SELECT * FROM mysql.plugin; SHOW PLUGINS"
     - mariadb -e "SHUTDOWN;"
     - rm -rf /var/lib/mysql/*  # Clear datadir before next run
     # Start database without install-db step
@@ -336,7 +336,7 @@ fedora install:
 
 fedora upgrade:
   stage: test
-  dependencies:
+  needs:
     - fedora
   script:
     - yum install -y mariadb-server
@@ -354,7 +354,6 @@ fedora upgrade:
     # so do this manual step to remove conflicts until packaging is fixed
     - yum remove -y mariadb-server-utils mariadb-gssapi-server mariadb-cracklib-password-check mariadb-backup mariadb-connector-c-config
     - rm -f rpm/*debuginfo*  # Not relevant in this test
-    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
     - yum install -y rpm/*.rpm
     # nothing provides galera-4 on Fedora, so this step fails if built with wsrep
     - mysql -e "SHUTDOWN;"
@@ -371,6 +370,8 @@ fedora upgrade:
     - |
       mariadb --skip-column-names -e "SELECT @@version, @@version_comment" | tee /tmp/version
       grep $MARIADB_MAJOR_VERSION /tmp/version || echo "MariaDB didn't upgrade properly"
+    - mariadb --table -e "SELECT * FROM mysql.global_priv; SHOW CREATE user root@localhost; SHOW CREATE user 'mariadb.sys'@localhost"
+    - mariadb --table -e "SELECT * FROM mysql.plugin; SHOW PLUGINS"
   artifacts:
     paths:
       - old-installed-database.sql
@@ -380,11 +381,10 @@ fedora upgrade:
 
 mini benchmark:
   stage: test
-  dependencies:
+  needs:
     - fedora
   script:
     - rm -f rpm/*debuginfo*  # Not relevant in this test
-    - rm -f rpm/*.el7.* rpm/*.el8.*  # Remove artifacts from undesired build
     # Nothing provides galera-4 on Fedora, so this step fails if built with wsrep
     - yum install -y rpm/*.rpm
     # Don't use cracklib, otherwise the Sysbench user password will be rejected
